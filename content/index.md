@@ -25,7 +25,7 @@ This repository contains all course materials for Big Data Analytics, including:
 
 ## 🗺️ New to This Repository?
 
-**Start here:** [📚 Complete Documentation Index (INDEX.md)](INDEX.md)
+**Start here:** [📚 Complete Documentation Index](documentation-index.md)
 
 The index provides a visual guide to all documentation, quick links by role, and decision trees for common tasks.
 
