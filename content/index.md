@@ -1,420 +1,429 @@
-# 📚 Complete Documentation Index
+---
+title: Home
+publish: true
+---
+# BIG DATA ANALYTICS — ESIEE Paris 2025-2026
 
-**BIG DATA ANALYTICS — ESIEE Paris 2025-2026**  
-**Authors:** Yassin Farahat, Seongjag AHN  
-**Last Updated:** December 6, 2025
+**Course:** Big Data Analytics  
+**Institution:** ESIEE Paris  
+**Academic Year:** 2025-2026  
+**Instructor:** Badr TAJINI  
+**Authors:** Yassin Farahat, Seongjag AHN
 
 ---
 
-## 🎯 Choose Your Path
+## 📚 Repository Overview
 
-| I want to... | Start here |
-|-------------|-----------|
-| **Get oriented** | [README.md](README.md) |
-| **Understand the course** | [BDA_ROADMAP.md](BDA_ROADMAP.md) |
-| **Deploy my website** | [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) |
-| **Find a specific doc** | [NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md) |
-| **Troubleshoot an issue** | [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md) |
-| **Work on a lab** | [Lab-specific README](#lab-documentation) |
+This repository contains all course materials for Big Data Analytics, including:
+
+- **Practice Labs** (`lab/lab{0,1,2,3,4}/practice/`) - Guided exercises with solutions
+- **Assignments** (`lab/lab{0,1,2,3,4}/assignment/`) - Graded work submissions
+- **Final Project** (`Projet/project-final/`) - Bitcoin price prediction using blockchain + market data
+- **Documentation** - Comprehensive guides for setup, deployment, and best practices
 
 ---
 
-## 📑 Core Documentation (Start Here)
+## 🗺️ New to This Repository?
 
-### 1. [README.md](README.md) 📄
-**Purpose:** Main entry point to the repository  
-**Read time:** 10 minutes  
-**Contents:**
-- Repository overview
-- Quick start guide for students
-- File structure explanation
-- Assessment breakdown (labs 20%, assignments 60%, docs 20%)
-- Common tasks and troubleshooting
-- Contact information
+**Start here:** [📚 Complete Documentation Index (INDEX.md)](INDEX.md)
 
-**When to read:** First visit to the repository
+The index provides a visual guide to all documentation, quick links by role, and decision trees for common tasks.
 
 ---
 
-### 2. [NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md) 🗺️
-**Purpose:** Visual guide showing how all docs connect  
-**Read time:** 5 minutes  
-**Contents:**
-- Document relationship diagrams
-- Decision trees (deployment, troubleshooting, learning)
-- Quick paths for common tasks
-- Role-based reading guides
+## 🚀 Quick Start
 
-**When to read:** When lost or unsure which doc to read
+### For Students: First-Time Setup
 
----
+1. **Clone this repository:**
+   ```bash
+   git clone https://github.com/YF-100/BIG_DATA_TD.git
+   cd BIG_DATA_TD
+   ```
 
-### 3. [BDA_ROADMAP.md](BDA_ROADMAP.md) 📖
-**Purpose:** Complete course structure and timeline  
-**Read time:** 20 minutes  
-**Contents:**
-- 10 course chapters overview
-- Detailed lab descriptions (Lab 0, 1, 2, 3, 4-A, 4-B)
-- Assignment specifications (A01-A05, each 15%)
-- Week-by-week timeline
-- Learning outcomes and assessment criteria
-- Evidence requirements (ENV.md, plans, Spark UI)
-- Performance optimization patterns
-- Reproducibility standards
+2. **Set up your development environment:**
+   - Read: `lab/lab0/ENV.md` for Python, Java, Spark installation
+   - Or read: `Projet/project-final/ENV.md` for project-specific setup
 
-**When to read:** Week 1, then reference throughout semester
+3. **Deploy your course website:**
+   ```bash
+   # IMPORTANT: Complete the pre-flight checklist first
+   cat DEPLOYMENT_CHECKLIST.md
+   
+   # Then read the quick start guide
+   cat QUARTZ_QUICKSTART.md
+   
+   # Edit setup_quartz_cloudflare.sh with your credentials
+   nano setup_quartz_cloudflare.sh
+   
+   # Deploy
+   make site/setup
+   ```
 
----
-
-## 🚀 Deployment Documentation
-
-### 4. [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) ✅
-**Purpose:** Pre-flight verification before first deployment  
-**Read time:** 15 minutes  
-**Contents:**
-- Complete pre-requisites checklist
-- Cloudflare account setup guide
-- API token creation instructions
-- Configuration variables worksheet
-- System requirements verification
-- Post-deployment verification steps
-- Maintenance reminders
-
-**When to read:** Before running `make site/setup` for the first time
-
-**Critical:** ⭐ Don't skip this! It ensures smooth deployment.
+4. **Start with Lab 0:**
+   - Navigate to `lab/lab0/`
+   - Open `BDA_Lab0_Starter_v2.ipynb` in Jupyter
+   - Follow the bootstrap instructions
 
 ---
 
-### 5. [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md) ⚡
-**Purpose:** Quick reference card for deployment  
-**Read time:** 5 minutes  
-**Contents:**
-- Essential commands (`make site/setup`, `site/update`, etc.)
-- Configuration variables summary
-- Quick troubleshooting fixes
-- File locations
-- Typical workflows
+## 📖 Essential Documentation
 
-**When to read:** Keep open during deployment; reference frequently
+### Getting Started Guides
+- **[Navigation Guide](NAVIGATION_GUIDE.md)** — Visual guide to all documentation 🗺️
+- **[BDA Roadmap](BDA_ROADMAP.md)** — Complete course structure, labs, and assignments timeline
+- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** — Pre-flight checklist before first deployment ⭐
+- **[Quartz Deployment Guide](QUARTZ_DEPLOYMENT_GUIDE.md)** — Detailed instructions for deploying your course website
+- **[Quartz Quickstart](QUARTZ_QUICKSTART.md)** — Quick reference for deployment commands
+- **[Documentation Summary](DOCUMENTATION_SUMMARY.md)** — What was created and why
 
----
+### Technical Guides
+- **Labs Setup:**
+  - Lab 0: `lab/lab0/ENV.md`
+  - Lab 1: `lab/lab1/practice/README.md` and `lab/lab1/assignment/README.md`
+  - Lab 2: `lab/lab2/Practice2/` and `lab/lab2/Assignment2/`
+  - Lab 3: `lab/lab3/practice/README.md` and `lab/lab3/assignment/README.md`
+  - Lab 4: `lab/lab4/practice4/` and `lab/lab4/Assignment4/README.md`
 
-### 6. [QUARTZ_DEPLOYMENT_GUIDE.md](QUARTZ_DEPLOYMENT_GUIDE.md) 🌐
-**Purpose:** Comprehensive deployment documentation  
-**Read time:** 20 minutes (reference material)  
-**Contents:**
-- Detailed prerequisites explanation
-- Step-by-step setup instructions
-- Configuration patterns and examples
-- Complete troubleshooting section
-- Security best practices
-- CI/CD integration guide
-- Custom domain setup
-- Maintenance procedures
-
-**When to read:** For troubleshooting or advanced configuration
+- **Final Project:**
+  - `Projet/project-final/README.md` — Project overview
+  - `Projet/project-final/ARCHITECTURE.md` — System architecture
+  - `Projet/project-final/PERSON_A_GUIDE.md` — Blockchain specialist tasks
+  - `Projet/project-final/PERSON_B_GUIDE.md` — Price modeling specialist tasks
 
 ---
 
-## 📊 Reference Documentation
+## 🗂️ Repository Structure
 
-### 7. [DOCUMENTATION_SUMMARY.md](DOCUMENTATION_SUMMARY.md) 📋
-**Purpose:** Explains what documentation exists and why  
-**Read time:** 5 minutes  
-**Contents:**
-- List of all created documents
-- Document purposes and relationships
-- What you need to do next
-- Configuration reference
-- Maintenance plan
-
-**When to read:** To understand the documentation system
-
----
-
-## 🔬 Lab Documentation
-
-### Lab 0 — Bootstrap (Ungraded)
-- **Location:** `lab/lab0/`
-- **Main file:** `BDA_Lab0_Starter_v2.ipynb`
-- **Environment:** `lab/lab0/ENV.md`
-- **Goal:** Set up Spark, verify installation
-
-### Lab 1 — Text Analytics & PMI (5%)
-- **Practice:**
-  - Location: `lab/lab1/practice/`
-  - Notebook: `BDA_PracticeLab01.ipynb`
-  - Guide: `lab/lab1/practice/README.md`
-  - Metrics: `lab/lab1/practice/lab1_metrics_log.csv`
-  
-- **Assignment:**
-  - Location: `lab/lab1/assignment/`
-  - Notebook: `BDA_Assignment01.ipynb`
-  - Report: `lab/lab1/assignment/LAB_REPORT.md`
-  - Guide: `lab/lab1/assignment/README.md`
-
-### Lab 2 — Boolean Retrieval (5%)
-- **Practice:**
-  - Location: `lab/lab2/Practice2/`
-  - Notebook: `BDA_PracticeLab02.ipynb`
-  - Outputs: `lab/lab2/Practice2/outputs/queries_and_results.md`
-  
-- **Assignment:**
-  - Location: `lab/lab2/Assignment2/`
-  - Notebook: `BDA_Assignment02.ipynb`
-  - Outputs: `lab/lab2/Assignment2/outputs/queries_and_results.md`
-
-### Lab 3 — Graph Analytics & Spam Classification (5%)
-- **Practice:**
-  - Location: `lab/lab3/practice/`
-  - Notebook: `BDA_PracticeLab03.ipynb`
-  - Guide: `lab/lab3/practice/README.md`
-  - Metrics: `lab/lab3/practice/METRICS_ANALYSIS.md`
-  
-- **Assignment:**
-  - Location: `lab/lab3/assignment/`
-  - Notebook: `BDA_Assignment03.ipynb`
-  - Report: `lab/lab3/assignment/LAB_REPORT.md`
-  - Metrics: `lab/lab3/assignment/lab_metrics_log.csv`
-  - Screenshots: `lab/lab3/assignment/screenshots/`
-
-### Lab 4 — Relational Queries & Streaming (5%)
-- **Practice:**
-  - Location: `lab/lab4/practice4/`
-  - Notebook: `BDA_PracticeLab04.ipynb`
-  - Summary: `lab/lab4/practice4/proof/SUMMARY.md`
-  
-- **Assignment:**
-  - Location: `lab/lab4/Assignment4/`
-  - Notebook: `BDA_Assignment04.ipynb`
-  - Guide: `lab/lab4/Assignment4/README.md`
-  - Performance: `lab/lab4/Assignment4/PERFORMANCE_COMPARISON.md`
+```
+BIG_DATA_TD/
+├── 📄 README.md                        ← You are here
+├── 📄 BDA_ROADMAP.md                   ← Course timeline & requirements
+├── 📄 QUARTZ_DEPLOYMENT_GUIDE.md       ← Website deployment instructions
+├── 📄 QUARTZ_QUICKSTART.md             ← Quick deployment reference
+├── 📜 Makefile                         ← Automation commands
+├── 📜 setup_quartz_cloudflare.sh       ← Deployment script
+│
+├── lab/                                ← Labs & Assignments
+│   ├── lab0/                           ← Bootstrap (ungraded)
+│   │   ├── BDA_Lab0_Starter_v2.ipynb
+│   │   ├── ENV.md
+│   │   └── data/
+│   │
+│   ├── lab1/                           ← Text Analytics I
+│   │   ├── practice/
+│   │   │   ├── BDA_PracticeLab01.ipynb
+│   │   │   ├── README.md
+│   │   │   └── proof/
+│   │   └── assignment/
+│   │       ├── BDA_Assignment01.ipynb
+│   │       ├── LAB_REPORT.md
+│   │       └── outputs/
+│   │
+│   └── lab3/                           ← Graph Analytics
+│       ├── practice/
+│       │   ├── BDA_PracticeLab03.ipynb
+│       │   └── proof/
+│       └── assignment/
+│           ├── BDA_Assignment03.ipynb
+│           ├── LAB_REPORT.md
+│           └── screenshots/
+│
+└── Projet/                             ← Final Project
+    └── project-final/
+        ├── README.md                   ← Project overview
+        ├── ARCHITECTURE.md             ← System design
+        ├── bda_project_config.yml      ← Configuration
+        ├── Makefile                    ← Build automation
+        ├── run_all.sh                  ← Full pipeline
+        │
+        ├── etl/                        ← Data extraction & transformation
+        │   ├── parse_blocks.py
+        │   └── process_prices.py
+        │
+        ├── features/                   ← Feature engineering
+        │   ├── blockchain_features.py
+        │   └── price_features.py
+        │
+        ├── models/                     ← Machine learning
+        │   ├── baseline.py
+        │   └── advanced_models.py
+        │
+        └── data/                       ← Project data (gitignored)
+```
 
 ---
 
-## 💼 Final Project Documentation
+## 🎯 Learning Objectives
 
-**Location:** `Projet/project-final/`
+By completing this course, you will:
 
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `README.md` | Project overview |
-| `ARCHITECTURE.md` | System design and data flow |
-| `ENV.md` | Environment setup |
-| `bda_project_config.yml` | Configuration (all paths, Spark settings) |
-| `Makefile` | Build automation |
-| `run_all.sh` | Full pipeline execution |
-
-### Person-Specific Guides
-
-| File | Responsibility |
-|------|---------------|
-| `PERSON_A_GUIDE.md` | Blockchain & ETL specialist |
-| `PERSON_B_GUIDE.md` | Price data & modeling specialist |
-| `PERSON_A_QUICKSTART.md` | Quick start for Person A |
-| `PERSON_A_COMPLETE.md` | Detailed Person A instructions |
-
-### Technical Documentation
-
-| File | Content |
-|------|---------|
-| `DATA_ACQUISITION.md` | How to get blockchain + price data |
-| `BITCOIN_CORE_SETUP.md` | Bitcoin Core installation |
-| `LIVE_DATA_GUIDE.md` | Live data collection setup |
+1. ✅ **Master Apache Spark** for distributed data processing
+2. ✅ **Implement text analytics** (PMI, inverted index, TF-IDF)
+3. ✅ **Build graph algorithms** (PageRank, Personalized PageRank)
+4. ✅ **Optimize SQL queries** with proper join strategies and data formats
+5. ✅ **Process streaming data** with windowing and stateful operations
+6. ✅ **Deliver reproducible research** with complete evidence packs
 
 ---
 
-## 🛠️ Configuration Files
+## 📅 Course Timeline
 
-### Root Level
-- **`Makefile`** — Build commands for site deployment
-- **`setup_quartz_cloudflare.sh`** — Deployment automation script
-- **`.github/copilot-instructions.md`** — AI assistant context
+| Week | Topic | Lab/Assignment |
+|------|-------|----------------|
+| 1 | Introduction & Setup | Lab 0 |
+| 2 | MapReduce → Spark | Lab 1 Practice |
+| 3 | Text Analytics | Lab 1 Assignment + **A01 Due** |
+| 4 | Graph Analytics I | Lab 3 Practice (Part 1) |
+| 5 | Graph Analytics II | Lab 3 Practice (Part 2) + **A02 Due** |
+| 6-7 | Relational Analytics | Lab 4-A + **A03 Due** |
+| 8-9 | Streaming Analytics | Lab 4-B + **A04-A Due** |
+| 10-12 | Final Project | **A04-B Due** → **A05 Due** |
 
-### Project Level
-- **`Projet/project-final/bda_project_config.yml`** — Project configuration
-- **`Projet/project-final/Makefile`** — Project build commands
-
----
-
-## 📖 Reading Order by Role
-
-### 🎓 Students (First Time)
-
-**Day 1: Orientation**
-1. [README.md](README.md) → Repository overview
-2. [NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md) → Understand docs
-3. [BDA_ROADMAP.md](BDA_ROADMAP.md) → Course structure
-
-**Day 2: Setup**
-1. [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) → Prepare credentials
-2. [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md) → Deploy site
-
-**Day 3-5: Bootstrap**
-1. `lab/lab0/ENV.md` → Environment setup
-2. `bigdata/lab0/BDA_Lab0_Starter_v2.ipynb` → First Spark code
+See [BDA_ROADMAP.md](BDA_ROADMAP.md) for detailed weekly breakdown.
 
 ---
 
-### 👨‍🏫 Instructors/TAs
+## 💻 Development Environment
 
-**Initial Setup**
-1. [DOCUMENTATION_SUMMARY.md](DOCUMENTATION_SUMMARY.md) → What exists
-2. [BDA_ROADMAP.md](BDA_ROADMAP.md) → Course timeline
-3. [QUARTZ_DEPLOYMENT_GUIDE.md](QUARTZ_DEPLOYMENT_GUIDE.md) → Technical details
+### Required Software
+- **Python:** 3.10+ (via conda)
+- **Java:** OpenJDK 11 or 21
+- **Apache Spark:** 4.0.x
+- **Jupyter:** For notebook execution
+- **VS Code:** Recommended IDE (with Python + Jupyter extensions)
 
-**Teaching**
-- Reference [BDA_ROADMAP.md](BDA_ROADMAP.md) for weekly content
-- Share lab-specific READMEs with students
-- Use [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md) for quick support
-
----
-
-### 🔧 System Administrators
-
-**Deployment Setup**
-1. [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) → Prerequisites
-2. [QUARTZ_DEPLOYMENT_GUIDE.md](QUARTZ_DEPLOYMENT_GUIDE.md) → Full technical guide
-3. Review `setup_quartz_cloudflare.sh` → Automation script
+### Installation
+Refer to environment-specific guides:
+- Labs: `lab/lab0/ENV.md` through `lab/lab4/Assignment4/ENV.md`
+- Project: `Projet/project-final/ENV.md`
 
 ---
 
-## 📊 Document Statistics
+## 🌐 Website Deployment
 
-| Category | Count | Total Lines |
-|----------|-------|-------------|
-| **Core Documentation** | 7 | ~2,500 |
-| **Lab Guides** | 6 | ~1,000 |
-| **Project Documentation** | 12 | ~3,000 |
-| **Configuration** | 3 | ~500 |
-| **Total** | **28** | **~7,000** |
+This repository supports automated deployment to Cloudflare Pages using Quartz (a modern static site generator).
 
----
+### Quick Deployment
+```bash
+# 1. Configure credentials (edit file)
+nano setup_quartz_cloudflare.sh
 
-## 🔍 Finding Specific Information
+# 2. First-time setup
+make site/setup
 
-### By Topic
+# 3. Update after changes
+make site/update
 
-| Topic | Document | Section |
-|-------|----------|---------|
-| **Course timeline** | BDA_ROADMAP.md | Weekly Timeline |
-| **Lab requirements** | BDA_ROADMAP.md | Practice Labs |
-| **Assignment specs** | BDA_ROADMAP.md | Real Assignments |
-| **Grading breakdown** | README.md | Assessment Structure |
-| **Environment setup** | Lab-specific ENV.md | Installation Steps |
-| **Deployment commands** | QUARTZ_QUICKSTART.md | Essential Commands |
-| **Troubleshooting deployment** | QUARTZ_QUICKSTART.md | Troubleshooting Quick Fixes |
-| **Deep troubleshooting** | QUARTZ_DEPLOYMENT_GUIDE.md | Troubleshooting |
-| **API token creation** | DEPLOYMENT_CHECKLIST.md | API Token Created |
-| **Evidence requirements** | BDA_ROADMAP.md | Reproducibility Standards |
-| **Spark optimization** | BDA_ROADMAP.md | Performance Optimization Patterns |
-| **Project architecture** | Projet/project-final/ARCHITECTURE.md | Full document |
+# 4. Lint before commit
+make site/check
+```
 
-### By Task
+### What Gets Deployed
+- ✅ All Markdown documentation
+- ✅ Jupyter notebooks (converted to HTML)
+- ✅ Lab outputs and proof artifacts
+- ✅ Project deliverables
+- ❌ Raw data files (excluded for size)
 
-| Task | Primary Doc | Supporting Docs |
-|------|-------------|----------------|
-| **Deploy site first time** | DEPLOYMENT_CHECKLIST.md | QUARTZ_QUICKSTART.md |
-| **Update site** | QUARTZ_QUICKSTART.md | N/A (just `make site/update`) |
-| **Complete Lab 1** | bigdata/lab1/practice/README.md | BDA_ROADMAP.md (Lab 1 section) |
-| **Submit Assignment** | BDA_ROADMAP.md (Evidence) | Lab-specific LAB_REPORT.md |
-| **Set up Bitcoin project** | Projet/project-final/README.md | PERSON_A_GUIDE.md or PERSON_B_GUIDE.md |
-| **Fix deployment error** | QUARTZ_QUICKSTART.md → QUARTZ_DEPLOYMENT_GUIDE.md | DEPLOYMENT_CHECKLIST.md |
+**Full guide:** [QUARTZ_DEPLOYMENT_GUIDE.md](QUARTZ_DEPLOYMENT_GUIDE.md)
 
 ---
 
-## 🆘 Emergency Quick Links
+## 📊 Assessment Breakdown
 
-**Site won't deploy:**
-1. [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md#pre-flight-checklist) → Verify all checks
-2. [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md#troubleshooting-quick-fixes) → Common fixes
-3. [QUARTZ_DEPLOYMENT_GUIDE.md](QUARTZ_DEPLOYMENT_GUIDE.md#troubleshooting) → Deep dive
+| Component | Weight | Details |
+|-----------|--------|---------|
+| **Practice Labs (4)** | 20% | 5% each (L1-L4) |
+| **Assignments (4)** | 60% | 15% each (A01-A04) |
+| **Final Project** | Included in A05 | Bitcoin prediction pipeline |
+| **Documentation** | 20% | Evidence quality & reproducibility |
 
-**Spark won't start:**
-1. Lab-specific `ENV.md` → Installation steps
-2. [README.md](README.md#troubleshooting) → Common Spark issues
-
-**Confused about deadlines:**
-1. [BDA_ROADMAP.md](BDA_ROADMAP.md#weekly-timeline) → Week-by-week schedule
-
-**Don't know what to do next:**
-1. [NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md#start-here-based-on-your-goal) → Decision tree
-
----
-
-## 📱 Mobile-Friendly Docs
-
-Best for viewing on mobile (shorter, more actionable):
-1. [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md)
-2. [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) (worksheet section)
-3. [README.md](README.md) (Quick Start section)
+### Evidence Requirements
+Every submission must include:
+- ✅ `ENV.md` with environment details
+- ✅ Execution plans (`df.explain("formatted")`)
+- ✅ Spark UI screenshots
+- ✅ Performance metrics (before/after)
+- ✅ Runnable code with clear comments
 
 ---
 
-## 💾 Download for Offline
+## 🔧 Common Tasks
 
-Key docs to save locally:
-- [BDA_ROADMAP.md](BDA_ROADMAP.md) → Course reference
-- [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md) → Command reference
-- Lab-specific README → Current lab instructions
+### Run a Lab Notebook
+```bash
+cd lab/lab1/practice
+jupyter notebook BDA_PracticeLab01.ipynb
+```
 
----
+### Execute Final Project Pipeline
+```bash
+cd Projet/project-final
 
-## 🔄 Last Updated
+# Full pipeline
+./run_all.sh
 
-- **Documentation created:** December 6, 2025
-- **Covers:** Quartz deployment + full course structure
-- **Maintained by:** Course instructor (Badr TAJINI)
+# Or step-by-step
+make download_data
+make parse_blockchain
+make create_features
+make train_models
+```
 
----
+### Capture Spark UI Evidence
+1. Start Spark job
+2. Open browser: http://localhost:4040
+3. Navigate to Jobs, Stages, or SQL tab
+4. Take screenshots
+5. Save to `proof/` or `screenshots/` directory
 
-## 🎯 Most Frequently Accessed
+### Update Course Website
+```bash
+# After editing notebooks or docs
+make site/update
 
-Based on expected usage patterns:
-
-1. **[QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md)** (daily) — Commands for site updates
-2. **[BDA_ROADMAP.md](BDA_ROADMAP.md)** (weekly) — Check assignment due dates
-3. **[README.md](README.md)** (one-time) — Initial orientation
-4. **Lab READMEs** (per-lab) — Specific instructions
-5. **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** (one-time) — Initial setup
-
----
-
-## ✅ Quick Start Checklist
-
-For absolute beginners:
-
-- [ ] Read [README.md](README.md) (10 min)
-- [ ] Review [NAVIGATION_GUIDE.md](NAVIGATION_GUIDE.md) (5 min)
-- [ ] Complete [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) (15 min)
-- [ ] Run `make site/setup` (10 min)
-- [ ] Read [BDA_ROADMAP.md](BDA_ROADMAP.md) (20 min)
-- [ ] Set up Lab 0 environment (30 min)
-
-**Total time:** ~90 minutes to full setup
+# Check deployment status
+# Visit: https://your-project.pages.dev
+```
 
 ---
 
-## 🌟 Pro Tips
+## 🐛 Troubleshooting
 
-1. **Keep these bookmarked:**
-   - This index file (for navigation)
-   - QUARTZ_QUICKSTART.md (for commands)
-   - BDA_ROADMAP.md (for deadlines)
+### Common Issues
 
-2. **Use Cmd+F / Ctrl+F** to search within long documents
+**Problem:** "Java not found" when starting Spark  
+**Solution:** Install OpenJDK 11 or 21, set `JAVA_HOME`
 
-3. **Follow the reading order** for your role (above)
+**Problem:** "Module not found: pyspark"  
+**Solution:** `pip install pyspark==4.0.0`
 
-4. **Check the Navigation Guide** if you're lost
+**Problem:** Spark UI not accessible  
+**Solution:** Check port 4040 isn't blocked; try 4041, 4042
 
-5. **Start with checklists** for step-by-step tasks
+**Problem:** Notebooks won't run  
+**Solution:** Activate conda environment: `conda activate bda-env`
+
+**Problem:** Website deployment fails  
+**Solution:** Check `CLOUDFLARE_API_TOKEN` is set correctly
+
+For more help, see:
+- Lab-specific README files
+- `ENV.md` in each directory
+- [QUARTZ_DEPLOYMENT_GUIDE.md](QUARTZ_DEPLOYMENT_GUIDE.md)
+
+---
+
+## 📝 Best Practices
+
+### Code Quality
+- Write clear, commented code
+- Use meaningful variable names
+- Follow PEP 8 for Python
+- Test with small datasets first
+
+### Performance
+- Always measure before optimizing
+- Use `cache()` for reused DataFrames
+- Prefer Parquet over CSV for large datasets
+- Monitor Spark UI for bottlenecks
+
+### Reproducibility
+- Document all assumptions
+- Pin dependency versions
+- Include data generation scripts
+- Test in clean environment
+
+### Collaboration (Final Project)
+- Use Git branches for features
+- Write descriptive commit messages
+- Review each other's code
+- Keep configuration in YAML files
+
+---
+
+## 📚 Additional Resources
+
+### Official Documentation
+- [Apache Spark Docs](https://spark.apache.org/docs/latest/)
+- [PySpark API Reference](https://spark.apache.org/docs/latest/api/python/)
+- [Spark SQL Guide](https://spark.apache.org/docs/latest/sql-programming-guide.html)
+
+### Learning Materials
+- [Spark Programming Guide](https://spark.apache.org/docs/latest/rdd-programming-guide.html)
+- [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
+- [Performance Tuning](https://spark.apache.org/docs/latest/tuning.html)
+
+### Community
+- [Stack Overflow - Apache Spark](https://stackoverflow.com/questions/tagged/apache-spark)
+- [Spark User Mailing List](https://spark.apache.org/community.html)
+
+---
+
+## 🤝 Contributing
+
+This is an academic repository. Students should:
+1. Work on their own branches for assignments
+2. Follow course plagiarism policies
+3. Cite external resources properly
+4. Document all code thoroughly
+
+For project collaboration:
+- Use pull requests for code review
+- Write tests for new features
+- Update documentation with changes
+- Follow the style guide in `.github/copilot-instructions.md`
+
+---
+
+## 📧 Contact
+
+**Instructor:** Badr TAJINI  
+**Course:** Big Data Analytics  
+**Institution:** ESIEE Paris
+
+For course-related questions:
+- Check documentation first (README, ENV.md, guides)
+- Review course Roadmap and assignment specs
+- Consult Spark documentation
+- Ask during lab sessions or office hours
+
+---
+
+## 📜 License
+
+Academic use only. All rights reserved.
+
+This repository contains course materials for ESIEE Paris students enrolled in Big Data Analytics (2025-2026). Redistribution or commercial use is prohibited without explicit permission.
+
+---
+
+## 🎓 Acknowledgments
+
+- **Apache Spark** community for excellent documentation
+- **Quartz** for the beautiful static site generator
+- **Cloudflare Pages** for free hosting
+- **ESIEE Paris** for supporting open educational resources
 
 ---
 
 **Happy Learning! 🚀**
 
-*This index is your map to all course documentation. Bookmark it for quick access throughout the semester.*
+*Remember: Big Data is not about the volume—it's about asking the right questions and having the tools to answer them.*
+
+---
+
+## Quick Navigation
+
+- 📚 **[Complete Documentation Index (INDEX.md)](INDEX.md)** ⭐ **Master navigation guide**
+- 🗺️ [Navigation Guide](NAVIGATION_GUIDE.md) — Visual doc relationships
+- 📖 [Course Roadmap](BDA_ROADMAP.md) — Timeline & assignments
+- ✅ [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) — Pre-deployment verification
+- ⚡ [Deployment Quickstart](QUARTZ_QUICKSTART.md) — Command reference
+- 🌐 [Deployment Guide](QUARTZ_DEPLOYMENT_GUIDE.md) — Detailed instructions
+- 🔧 [Project Architecture](Projet/project-final/ARCHITECTURE.md) — System design
+- 📝 [Lab 1 Guide](lab/lab1/practice/README.md) — Text analytics & PMI
+- 📝 [Lab 2 Guide](lab/lab2/Practice2/) — Boolean retrieval
+- 📊 [Lab 3 Guide](lab/lab3/practice/README.md) — Graph analytics & spam classification
+- 📊 [Lab 4 Guide](lab/lab4/Assignment4/README.md) — Relational queries & streaming
