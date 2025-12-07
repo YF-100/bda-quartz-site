@@ -380,7 +380,7 @@ After successful deployment:
    - See `BDA_ROADMAP.md` for course structure
 
 4. **Start Lab 0:**
-   - Navigate to `bigdata/lab0/`
+   - Navigate to `lab/lab0/`
    - Open `BDA_Lab0_Starter_v2.ipynb`
 
 5. **Set up CI/CD (optional):**

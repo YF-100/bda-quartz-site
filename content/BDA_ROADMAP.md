@@ -473,7 +473,7 @@ Every submission must include an evidence pack with:
 - Generated: `scripts/generate_data.py --seed 42`
 
 ## Execution
-- Command: `jupyter notebook Lab01.ipynb`
+- Command: `jupyter notebook BDA_PracticeLab01.ipynb`
 - Duration: ~5 minutes
 - Output: `outputs/results.csv`
 ```

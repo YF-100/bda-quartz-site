@@ -71,7 +71,7 @@ START: Enrolled in course
 │   ├─→ Weekly timeline
 │   └─→ Evidence requirements
 │
-├─→ 3. READ: bigdata/lab0/ENV.md
+├─→ 3. READ: lab/lab0/ENV.md
 │   └─→ Set up development environment
 │
 ├─→ 4. EXECUTE: Lab 0 (bootstrap)
@@ -95,10 +95,10 @@ START: Ready to work on Lab N
 ├─→ 1. REFERENCE: BDA_ROADMAP.md
 │   └─→ Find lab section, read requirements
 │
-├─→ 2. READ: bigdata/labN/practice/README.md
+├─→ 2. READ: lab/labN/practice/README.md
 │   └─→ Specific instructions for that lab
 │
-├─→ 3. OPEN: bigdata/labN/practice/BDA_PracticeLabN.ipynb
+├─→ 3. OPEN: lab/labN/practice/BDA_PracticeLabN.ipynb
 │   └─→ Execute cells, follow guidance
 │
 ├─→ 4. CAPTURE: Evidence (plans, Spark UI)
@@ -130,7 +130,7 @@ START: Something isn't working
 │   │   └─→ READ: QUARTZ_DEPLOYMENT_GUIDE.md (Troubleshooting section)
 │   │
 │   ├─→ Spark/Lab Issue
-│   │   ├─→ CHECK: bigdata/labN/ENV.md
+│   │   ├─→ CHECK: lab/labN/ENV.md
 │   │   ├─→ CHECK: README.md (Troubleshooting section)
 │   │   └─→ READ: Lab-specific README
 │   │
@@ -176,7 +176,7 @@ Day 2: DEPLOYMENT_CHECKLIST.md → QUARTZ_QUICKSTART.md
 Day 3: make site/setup
        └─→ Deploy your site
 
-Day 4: bigdata/lab0/
+Day 4: lab/lab0/
        └─→ Bootstrap environment
 
 Day 5: BDA_ROADMAP.md (Lab 1 section)

@@ -7,11 +7,11 @@
 ## 🎯 Your Responsibilities
 
 ### Core Tasks
-1.  Parse Bitcoin blockchain data → `data/transactions.parquet`
-2.  Create basic blockchain features → `data/blockchain_features.parquet`
-3.  Create advanced blockchain features → `data/advanced_blockchain_features.parquet`
-4.  Optimize Spark execution and document physical plans
-5.  Collaborate with Person B on feature joining
+1. ✅ Parse Bitcoin blockchain data → `data/transactions.parquet`
+2. ✅ Create basic blockchain features → `data/blockchain_features.parquet`
+3. ✅ Create advanced blockchain features → `data/advanced_blockchain_features.parquet`
+4. ✅ Optimize Spark execution and document physical plans
+5. ✅ Collaborate with Person B on feature joining
 
 ---
 

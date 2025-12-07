@@ -135,36 +135,60 @@
 ## 🔬 Lab Documentation
 
 ### Lab 0 — Bootstrap (Ungraded)
-- **Location:** `bigdata/lab0/`
+- **Location:** `lab/lab0/`
 - **Main file:** `BDA_Lab0_Starter_v2.ipynb`
-- **Environment:** `bigdata/lab0/ENV.md`
+- **Environment:** `lab/lab0/ENV.md`
 - **Goal:** Set up Spark, verify installation
 
-### Lab 1 — Text Analytics I (5%)
+### Lab 1 — Text Analytics & PMI (5%)
 - **Practice:**
-  - Location: `bigdata/lab1/practice/`
+  - Location: `lab/lab1/practice/`
   - Notebook: `BDA_PracticeLab01.ipynb`
-  - Guide: `bigdata/lab1/practice/README.md`
-  - Metrics: `bigdata/lab1/practice/lab1_metrics_log.csv`
+  - Guide: `lab/lab1/practice/README.md`
+  - Metrics: `lab/lab1/practice/lab1_metrics_log.csv`
   
 - **Assignment:**
-  - Location: `bigdata/lab1/assignment/`
+  - Location: `lab/lab1/assignment/`
   - Notebook: `BDA_Assignment01.ipynb`
-  - Report: `bigdata/lab1/assignment/LAB_REPORT.md`
-  - Guide: `bigdata/lab1/assignment/README.md`
+  - Report: `lab/lab1/assignment/LAB_REPORT.md`
+  - Guide: `lab/lab1/assignment/README.md`
 
-### Lab 3 — Graph Analytics (5%)
+### Lab 2 — Boolean Retrieval (5%)
 - **Practice:**
-  - Location: `bigdata/lab3/practice/`
-  - Notebook: `BDA_PracticeLab03.ipynb`
-  - Guide: `bigdata/lab3/practice/README.md`
+  - Location: `lab/lab2/Practice2/`
+  - Notebook: `BDA_PracticeLab02.ipynb`
+  - Outputs: `lab/lab2/Practice2/outputs/queries_and_results.md`
   
 - **Assignment:**
-  - Location: `bigdata/lab3/assignment/`
+  - Location: `lab/lab2/Assignment2/`
+  - Notebook: `BDA_Assignment02.ipynb`
+  - Outputs: `lab/lab2/Assignment2/outputs/queries_and_results.md`
+
+### Lab 3 — Graph Analytics & Spam Classification (5%)
+- **Practice:**
+  - Location: `lab/lab3/practice/`
+  - Notebook: `BDA_PracticeLab03.ipynb`
+  - Guide: `lab/lab3/practice/README.md`
+  - Metrics: `lab/lab3/practice/METRICS_ANALYSIS.md`
+  
+- **Assignment:**
+  - Location: `lab/lab3/assignment/`
   - Notebook: `BDA_Assignment03.ipynb`
-  - Report: `bigdata/lab3/assignment/LAB_REPORT.md`
-  - Metrics: `bigdata/lab3/assignment/lab_metrics_log.csv`
-  - Screenshots: `bigdata/lab3/assignment/screenshots/`
+  - Report: `lab/lab3/assignment/LAB_REPORT.md`
+  - Metrics: `lab/lab3/assignment/lab_metrics_log.csv`
+  - Screenshots: `lab/lab3/assignment/screenshots/`
+
+### Lab 4 — Relational Queries & Streaming (5%)
+- **Practice:**
+  - Location: `lab/lab4/practice4/`
+  - Notebook: `BDA_PracticeLab04.ipynb`
+  - Summary: `lab/lab4/practice4/proof/SUMMARY.md`
+  
+- **Assignment:**
+  - Location: `lab/lab4/Assignment4/`
+  - Notebook: `BDA_Assignment04.ipynb`
+  - Guide: `lab/lab4/Assignment4/README.md`
+  - Performance: `lab/lab4/Assignment4/PERFORMANCE_COMPARISON.md`
 
 ---
 
@@ -229,7 +253,7 @@
 2. [QUARTZ_QUICKSTART.md](QUARTZ_QUICKSTART.md) → Deploy site
 
 **Day 3-5: Bootstrap**
-1. `bigdata/lab0/ENV.md` → Environment setup
+1. `lab/lab0/ENV.md` → Environment setup
 2. `bigdata/lab0/BDA_Lab0_Starter_v2.ipynb` → First Spark code
 
 ---
