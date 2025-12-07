@@ -1,0 +1,133 @@
+== Physical Plan ==
+AdaptiveSparkPlan (21)
++- HashAggregate (20)
+   +- Exchange (19)
+      +- HashAggregate (18)
+         +- Project (17)
+            +- BroadcastHashJoin Inner BuildRight (16)
+               :- Project (12)
+               :  +- BroadcastHashJoin Inner BuildRight (11)
+               :     :- Project (7)
+               :     :  +- BroadcastHashJoin Inner BuildRight (6)
+               :     :     :- Filter (2)
+               :     :     :  +- Scan parquet  (1)
+               :     :     +- BroadcastExchange (5)
+               :     :        +- Filter (4)
+               :     :           +- Scan parquet  (3)
+               :     +- BroadcastExchange (10)
+               :        +- Filter (9)
+               :           +- Scan parquet  (8)
+               +- BroadcastExchange (15)
+                  +- Filter (14)
+                     +- Scan parquet  (13)
+
+
+(1) Scan parquet 
+Output [2]: [l_orderkey#291, l_shipdate#301]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/lineitem]
+PushedFilters: [IsNotNull(l_orderkey)]
+ReadSchema: struct<l_orderkey:int,l_shipdate:string>
+
+(2) Filter
+Input [2]: [l_orderkey#291, l_shipdate#301]
+Condition : isnotnull(l_orderkey#291)
+
+(3) Scan parquet 
+Output [2]: [o_orderkey#307, o_custkey#308]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/orders]
+PushedFilters: [IsNotNull(o_orderkey), IsNotNull(o_custkey)]
+ReadSchema: struct<o_orderkey:int,o_custkey:int>
+
+(4) Filter
+Input [2]: [o_orderkey#307, o_custkey#308]
+Condition : (isnotnull(o_orderkey#307) AND isnotnull(o_custkey#308))
+
+(5) BroadcastExchange
+Input [2]: [o_orderkey#307, o_custkey#308]
+Arguments: HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)),false), [plan_id=977]
+
+(6) BroadcastHashJoin
+Left keys [1]: [l_orderkey#291]
+Right keys [1]: [o_orderkey#307]
+Join type: Inner
+Join condition: None
+
+(7) Project
+Output [2]: [l_shipdate#301, o_custkey#308]
+Input [4]: [l_orderkey#291, l_shipdate#301, o_orderkey#307, o_custkey#308]
+
+(8) Scan parquet 
+Output [2]: [c_custkey#317, c_nationkey#319]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/customer]
+PushedFilters: [IsNotNull(c_custkey), IsNotNull(c_nationkey)]
+ReadSchema: struct<c_custkey:int,c_nationkey:int>
+
+(9) Filter
+Input [2]: [c_custkey#317, c_nationkey#319]
+Condition : (isnotnull(c_custkey#317) AND isnotnull(c_nationkey#319))
+
+(10) BroadcastExchange
+Input [2]: [c_custkey#317, c_nationkey#319]
+Arguments: HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)),false), [plan_id=981]
+
+(11) BroadcastHashJoin
+Left keys [1]: [o_custkey#308]
+Right keys [1]: [c_custkey#317]
+Join type: Inner
+Join condition: None
+
+(12) Project
+Output [2]: [l_shipdate#301, c_nationkey#319]
+Input [4]: [l_shipdate#301, o_custkey#308, c_custkey#317, c_nationkey#319]
+
+(13) Scan parquet 
+Output [2]: [n_nationkey#322, n_name#323]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/nation]
+PushedFilters: [In(n_name, [CANADA,UNITED STATES]), IsNotNull(n_nationkey)]
+ReadSchema: struct<n_nationkey:int,n_name:string>
+
+(14) Filter
+Input [2]: [n_nationkey#322, n_name#323]
+Condition : (n_name#323 IN (UNITED STATES,CANADA) AND isnotnull(n_nationkey#322))
+
+(15) BroadcastExchange
+Input [2]: [n_nationkey#322, n_name#323]
+Arguments: HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)),false), [plan_id=985]
+
+(16) BroadcastHashJoin
+Left keys [1]: [c_nationkey#319]
+Right keys [1]: [n_nationkey#322]
+Join type: Inner
+Join condition: None
+
+(17) Project
+Output [3]: [n_nationkey#322, n_name#323, date_format(cast(cast(l_shipdate#301 as date) as timestamp), yyyy-MM, Some(UTC)) AS ship_month#327]
+Input [4]: [l_shipdate#301, c_nationkey#319, n_nationkey#322, n_name#323]
+
+(18) HashAggregate
+Input [3]: [n_nationkey#322, n_name#323, ship_month#327]
+Keys [3]: [n_nationkey#322, n_name#323, ship_month#327]
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#363L]
+Results [4]: [n_nationkey#322, n_name#323, ship_month#327, count#364L]
+
+(19) Exchange
+Input [4]: [n_nationkey#322, n_name#323, ship_month#327, count#364L]
+Arguments: hashpartitioning(n_nationkey#322, n_name#323, ship_month#327, 4), ENSURE_REQUIREMENTS, [plan_id=990]
+
+(20) HashAggregate
+Input [4]: [n_nationkey#322, n_name#323, ship_month#327, count#364L]
+Keys [3]: [n_nationkey#322, n_name#323, ship_month#327]
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#362L]
+Results [4]: [n_nationkey#322, n_name#323, ship_month#327, count(1)#362L AS shipment_count#328L]
+
+(21) AdaptiveSparkPlan
+Output [4]: [n_nationkey#322, n_name#323, ship_month#327, shipment_count#328L]
+Arguments: isFinalPlan=false
+
+

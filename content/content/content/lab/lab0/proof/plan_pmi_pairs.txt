@@ -1,0 +1,9 @@
+== Physical Plan ==
+* Scan ExistingRDD (1)
+
+
+(1) Scan ExistingRDD [codegen id : 1]
+Output [4]: [x#22, y#23, n_xy#24L, pmi#25]
+Arguments: [x#22, y#23, n_xy#24L, pmi#25], MapPartitionsRDD[65] at applySchemaToPythonRDD at NativeMethodAccessorImpl.java:0, ExistingRDD, UnknownPartitioning(0)
+
+
