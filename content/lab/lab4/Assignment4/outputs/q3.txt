@@ -1,0 +1,21 @@
+l_orderkey	p_name	s_name
+103296	navajo lavender misty lime moccasin	Supplier#000000657
+104802	lime violet puff snow chiffon	Supplier#000000053
+106470	mint chiffon dim pink saddle	Supplier#000000548
+110912	burnished navajo plum chartreuse moccasin	Supplier#000000718
+111078	frosted metallic spring lawn papaya	Supplier#000000080
+111266	medium lime burlywood cream moccasin	Supplier#000000724
+112260	navy sienna rose blush aquamarine	Supplier#000000734
+112836	chocolate thistle lace olive ivory	Supplier#000000355
+114499	green aquamarine azure midnight chiffon	Supplier#000000219
+123527	rosy spring peru burnished chiffon	Supplier#000000180
+125028	bisque magenta navy linen misty	Supplier#000000238
+128642	orange deep sienna coral linen	Supplier#000000175
+13156	lace floral orchid blue lawn	Supplier#000000737
+131651	cream green wheat coral yellow	Supplier#000000369
+132003	sienna brown orange maroon almond	Supplier#000000327
+135492	linen tomato azure firebrick indian	Supplier#000000894
+135936	navy tan thistle dim honeydew	Supplier#000000091
+136162	orchid red tan indian rosy	Supplier#000000411
+136999	snow chartreuse chiffon firebrick saddle	Supplier#000000663
+138823	lace medium burnished peach tan	Supplier#000000725

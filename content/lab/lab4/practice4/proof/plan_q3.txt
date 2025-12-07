@@ -1,0 +1,87 @@
+== Physical Plan ==
+AdaptiveSparkPlan (14)
++- Project (13)
+   +- BroadcastHashJoin Inner BuildRight (12)
+      :- Project (8)
+      :  +- BroadcastHashJoin Inner BuildRight (7)
+      :     :- Project (3)
+      :     :  +- Filter (2)
+      :     :     +- Scan parquet  (1)
+      :     +- BroadcastExchange (6)
+      :        +- Filter (5)
+      :           +- Scan parquet  (4)
+      +- BroadcastExchange (11)
+         +- Filter (10)
+            +- Scan parquet  (9)
+
+
+(1) Scan parquet 
+Output [4]: [l_orderkey#274, l_partkey#275, l_suppkey#276, l_shipdate#284]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/lineitem]
+PushedFilters: [IsNotNull(l_shipdate), EqualTo(l_shipdate,1995-03-15), IsNotNull(l_partkey), IsNotNull(l_suppkey)]
+ReadSchema: struct<l_orderkey:int,l_partkey:int,l_suppkey:int,l_shipdate:string>
+
+(2) Filter
+Input [4]: [l_orderkey#274, l_partkey#275, l_suppkey#276, l_shipdate#284]
+Condition : (((isnotnull(l_shipdate#284) AND (l_shipdate#284 = 1995-03-15)) AND isnotnull(l_partkey#275)) AND isnotnull(l_suppkey#276))
+
+(3) Project
+Output [3]: [l_orderkey#274, l_partkey#275, l_suppkey#276]
+Input [4]: [l_orderkey#274, l_partkey#275, l_suppkey#276, l_shipdate#284]
+
+(4) Scan parquet 
+Output [2]: [p_partkey#263, p_name#264]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/part]
+PushedFilters: [IsNotNull(p_partkey)]
+ReadSchema: struct<p_partkey:int,p_name:string>
+
+(5) Filter
+Input [2]: [p_partkey#263, p_name#264]
+Condition : isnotnull(p_partkey#263)
+
+(6) BroadcastExchange
+Input [2]: [p_partkey#263, p_name#264]
+Arguments: HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)),false), [plan_id=899]
+
+(7) BroadcastHashJoin
+Left keys [1]: [l_partkey#275]
+Right keys [1]: [p_partkey#263]
+Join type: Inner
+Join condition: None
+
+(8) Project
+Output [3]: [l_orderkey#274, l_suppkey#276, p_name#264]
+Input [5]: [l_orderkey#274, l_partkey#275, l_suppkey#276, p_partkey#263, p_name#264]
+
+(9) Scan parquet 
+Output [2]: [s_suppkey#269, s_name#270]
+Batched: true
+Location: InMemoryFileIndex [file:/Users/jackahn/Desktop/BigDataAnalytics/practice4/data/tpch/TPC-H-0.1-PARQUET/supplier]
+PushedFilters: [IsNotNull(s_suppkey)]
+ReadSchema: struct<s_suppkey:int,s_name:string>
+
+(10) Filter
+Input [2]: [s_suppkey#269, s_name#270]
+Condition : isnotnull(s_suppkey#269)
+
+(11) BroadcastExchange
+Input [2]: [s_suppkey#269, s_name#270]
+Arguments: HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)),false), [plan_id=903]
+
+(12) BroadcastHashJoin
+Left keys [1]: [l_suppkey#276]
+Right keys [1]: [s_suppkey#269]
+Join type: Inner
+Join condition: None
+
+(13) Project
+Output [3]: [l_orderkey#274, p_name#264, s_name#270]
+Input [5]: [l_orderkey#274, l_suppkey#276, p_name#264, s_suppkey#269, s_name#270]
+
+(14) AdaptiveSparkPlan
+Output [3]: [l_orderkey#274, p_name#264, s_name#270]
+Arguments: isFinalPlan=false
+
+
