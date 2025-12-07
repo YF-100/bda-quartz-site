@@ -1,8 +1,0 @@
-job_name,stage_id,files_read,input_size_mb,shuffle_read_mb,shuffle_write_mb,notes
-perfect_followers,"3,9",1,5.2,0.0002,0.0006,Part A - perfect follower counts (Stage 3 reduceByKey + Stage 9 collect)
-pmi_pairs_count_lines,13,1,5.2,0.0,0.0,Part B Pairs - count lines for total
-pmi_pairs_word_counts,14,1,5.2,0.0,0.313,Part B Pairs - word counting (320.7 KiB shuffle write)
-pmi_pairs_pair_counts,16,1,5.2,0.0,20.6,Part B Pairs - pair counting and PMI calc
-pmi_pairs_final,22,0,0.0,6.6,0.0,Part B Pairs - final collect and sort
-pmi_stripes_generation,23,1,5.2,0.0,13.7,Part B Stripes - stripe generation with combiners
-pmi_stripes_final,29,0,0.0,7.3,0.0,Part B Stripes - final collect and sort

@@ -1,9 +1,0 @@
-== Physical Plan ==
-* Scan ExistingRDD (1)
-
-
-(1) Scan ExistingRDD [codegen id : 1]
-Output [4]: [word1#124, word2#125, count#126L, PMI#127]
-Arguments: [word1#124, word2#125, count#126L, PMI#127], MapPartitionsRDD[363] at applySchemaToPythonRDD at <unknown>:0, ExistingRDD, UnknownPartitioning(0)
-
-
