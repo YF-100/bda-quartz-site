@@ -7,35 +7,40 @@ echo "=========================================="
 echo "Blockchain Metrics Processing Pipeline"
 echo "=========================================="
 
-cd /Users/jackahn/Desktop/BitCoin/project-final
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Use virtual environment Python
+PYTHON_CMD="$SCRIPT_DIR/venv/bin/python"
 
 # Step 1: Blockchain metrics ETL
 echo ""
 echo "[1/4] Processing blockchain metrics CSV files..."
-python etl/process_blockchain_metrics.py
+$PYTHON_CMD etl/process_blockchain_metrics.py
 echo "✓ Done: data/blockchain_metrics.parquet"
 
 # Step 2: Create blockchain features
 echo ""
 echo "[2/4] Creating blockchain features..."
-python features/blockchain_features_from_metrics.py
+$PYTHON_CMD features/blockchain_features_from_metrics.py
 echo "✓ Done: data/blockchain_features.parquet"
 
 # Step 3: Join features
 echo ""
 echo "[3/4] Joining price features and blockchain features..."
-python features/join_features.py
+$PYTHON_CMD features/join_features.py
 echo "✓ Done: data/features.parquet"
 
 # Step 4: Retrain models
 echo ""
 echo "[4/4] Retraining models..."
 echo "  [4a] Baseline model..."
-python models/baseline.py
+$PYTHON_CMD models/baseline.py
 echo "  [4b] Advanced models..."
-python models/advanced_models.py
+$PYTHON_CMD models/advanced_models.py
 echo "  [4c] Evaluation..."
-python models/evaluate.py
+$PYTHON_CMD models/evaluate.py
 
 echo ""
 echo "=========================================="
