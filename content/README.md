@@ -7,7 +7,8 @@ publish: true
 **Course:** Big Data Analytics  
 **Institution:** ESIEE Paris  
 **Academic Year:** 2025-2026  
-**Instructor:** Badr TAJINI
+**Instructor:** Badr TAJINI  
+**Authors:** Yassin Farahat, Seongjag AHN
 
 ---
 

@@ -1,6 +1,7 @@
 # 📚 Complete Documentation Index
 
 **BIG DATA ANALYTICS — ESIEE Paris 2025-2026**  
+**Authors:** Yassin Farahat, Seongjag AHN  
 **Last Updated:** December 6, 2025
 
 ---
