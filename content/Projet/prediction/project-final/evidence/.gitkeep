@@ -1,0 +1,22 @@
+# Evidence Directory
+
+This directory contains evidence for reproducibility:
+
+## spark_plans/
+Spark execution plans (explain formatted) for each pipeline step:
+- parse_blocks_plan.txt
+- process_prices_plan.txt
+- blockchain_features_plan.txt
+- advanced_blockchain_features_plan.txt
+- price_features_plan.txt
+- join_features_plan.txt
+
+## spark_ui_screenshots/
+Screenshots from Spark UI (port 4040) showing:
+- DAG visualizations
+- Stage details
+- Storage information
+- Executors
+- SQL queries
+
+Take screenshots during execution and save here.

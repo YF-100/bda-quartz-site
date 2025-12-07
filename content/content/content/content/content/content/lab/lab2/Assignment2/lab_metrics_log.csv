@@ -1,0 +1,8 @@
+run_id,task,note,files_read,input_size_bytes,shuffle_read_bytes,shuffle_write_bytes,elapsed_ms,timestamp
+r1,bigram_pairs,baseline,1,5452595,4194304,4194304,1630,2025-11-14T20:30:00Z
+r2,bigram_stripes,baseline,1,5452595,2306867,2306867,840,2025-11-14T20:31:00Z
+r3,pmi_pairs,threshold=10,1,5452595,4194304,4194304,1850,2025-11-14T20:32:00Z
+r4,inverted_index,build,1,5452595,0,0,1200,2025-11-14T20:33:00Z
+r5,boolean_retrieval,query_execution,0,0,0,0,45,2025-11-14T20:34:00Z
+r6,bigram_pairs,partitions=16,1,5452595,4194304,4194304,1630,2025-11-14T20:35:00Z
+r7,bigram_stripes,partitions=16,1,5452595,2306867,2306867,840,2025-11-14T20:36:00Z

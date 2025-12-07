@@ -1,0 +1,14 @@
+=== Perfect Followers Query Plan ===
+
+== Parsed Logical Plan ==
+LogicalRDD [word#5, count#6L], false
+
+== Analyzed Logical Plan ==
+word: string, count: bigint
+LogicalRDD [word#5, count#6L], false
+
+== Optimized Logical Plan ==
+LogicalRDD [word#5, count#6L], false
+
+== Physical Plan ==
+*(1) Scan ExistingRDD[word#5,count#6L]

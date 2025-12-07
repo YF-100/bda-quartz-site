@@ -1,0 +1,20 @@
+=== Logical Plan ===
+'RepartitionByExpression ['block_height], 8
++- Project [block_height#8L, fee#9, num_inputs#10L, num_outputs#11L, cast(from_unixtime(timestamp#12L, yyyy-MM-dd HH:mm:ss, Some(Europe/Paris)) as timestamp) AS timestamp#22, total_value_btc#13, tx_id#14]
+   +- Relation [block_height#8L,fee#9,num_inputs#10L,num_outputs#11L,timestamp#12L,total_value_btc#13,tx_id#14] json
+
+
+=== Optimized Logical Plan ===
+RepartitionByExpression [block_height#8L], 8
++- InMemoryRelation [block_height#8L, fee#9, num_inputs#10L, num_outputs#11L, timestamp#22, total_value_btc#13, tx_id#14], StorageLevel(disk, memory, deserialized, 1 replicas)
+      +- *(1) Project [block_height#8L, fee#9, num_inputs#10L, num_outputs#11L, cast(from_unixtime(timestamp#12L, yyyy-MM-dd HH:mm:ss, Some(Europe/Paris)) as timestamp) AS timestamp#22, total_value_btc#13, tx_id#14]
+         +- FileScan json [block_height#8L,fee#9,num_inputs#10L,num_outputs#11L,timestamp#12L,total_value_btc#13,tx_id#14] Batched: false, DataFilters: [], Format: JSON, Location: InMemoryFileIndex(1 paths)[file:/var/folders/h8/bw1cd3457g94csx__x2kmt700000gn/T/btc_tx_hyszt5hp], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<block_height:bigint,fee:double,num_inputs:bigint,num_outputs:bigint,timestamp:bigint,total...
+
+
+=== Physical Plan ===
+AdaptiveSparkPlan isFinalPlan=false
++- Exchange hashpartitioning(block_height#8L, 8), REPARTITION_BY_NUM, [plan_id=504]
+   +- InMemoryTableScan [block_height#8L, fee#9, num_inputs#10L, num_outputs#11L, timestamp#22, total_value_btc#13, tx_id#14]
+         +- InMemoryRelation [block_height#8L, fee#9, num_inputs#10L, num_outputs#11L, timestamp#22, total_value_btc#13, tx_id#14], StorageLevel(disk, memory, deserialized, 1 replicas)
+               +- *(1) Project [block_height#8L, fee#9, num_inputs#10L, num_outputs#11L, cast(from_unixtime(timestamp#12L, yyyy-MM-dd HH:mm:ss, Some(Europe/Paris)) as timestamp) AS timestamp#22, total_value_btc#13, tx_id#14]
+                  +- FileScan json [block_height#8L,fee#9,num_inputs#10L,num_outputs#11L,timestamp#12L,total_value_btc#13,tx_id#14] Batched: false, DataFilters: [], Format: JSON, Location: InMemoryFileIndex(1 paths)[file:/var/folders/h8/bw1cd3457g94csx__x2kmt700000gn/T/btc_tx_hyszt5hp], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<block_height:bigint,fee:double,num_inputs:bigint,num_outputs:bigint,timestamp:bigint,total...

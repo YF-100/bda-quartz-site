@@ -1,0 +1,12 @@
+== Parsed Logical Plan ==
+LogicalRDD [node#0L, pagerank#1], false
+
+== Analyzed Logical Plan ==
+node: bigint, pagerank: double
+LogicalRDD [node#0L, pagerank#1], false
+
+== Optimized Logical Plan ==
+LogicalRDD [node#0L, pagerank#1], false
+
+== Physical Plan ==
+*(1) Scan ExistingRDD[node#0L,pagerank#1]

@@ -1,0 +1,39 @@
+run_id,task,note,files_read,input_size_bytes,shuffle_read_bytes,shuffle_write_bytes,timestamp
+# Instructions: Capture these metrics from Spark UI (localhost:4040) during execution
+# Navigate to: Stages tab → Click stage → Files Read, Shuffle Read/Write
+# Format timestamp as: YYYY-MM-DD HH:MM:SS
+
+# Part A: PageRank
+1,pagerank_load_graph,"Load and parse graph adjacency list - Stage 0",p2p-Gnutella08-adj.txt,551800,0,95800,2025-11-12 19:17:28
+2,pagerank_count,"Count nodes - Stage 1",p2p-Gnutella08-adj.txt,95800,0,0,2025-11-12 19:17:29
+3,pagerank_iteration_1,"First PageRank iteration - Stage 3+4",p2p-Gnutella08-adj.txt,176700,84900,84900,2025-11-12 19:17:29
+4,pagerank_iteration_5,"Fifth PageRank iteration - Stage 33+34",p2p-Gnutella08-adj.txt,176700,169000,169200,2025-11-12 19:17:30
+5,pagerank_iteration_10,"Final PageRank iteration - Stage 75+76",p2p-Gnutella08-adj.txt,176700,169100,169100,2025-11-12 19:17:32
+6,pagerank_top20,"Extract top-20 with takeOrdered - Stage 88",p2p-Gnutella08-adj.txt,88300,169100,0,2025-11-12 19:17:32
+
+# Part A: Personalized PageRank  
+7,ppr_iteration_1,"First PPR iteration - Stage 102+103+104",p2p-Gnutella08-adj.txt,176700,0,126800,2025-11-12 19:17:33
+8,ppr_iteration_5,"Fifth PPR iteration - Stage 188+189+190+191",p2p-Gnutella08-adj.txt,88300,869300,297600,2025-11-12 19:17:52
+9,ppr_iteration_10,"Final PPR iteration - Stage 272+273+274+275",p2p-Gnutella08-adj.txt,88300,1132600,426500,2025-11-12 19:18:13
+10,ppr_top20,"Extract top-20 PPR nodes - Stage 307",p2p-Gnutella08-adj.txt,448300,1132600,0,2025-11-12 19:18:18
+
+# Part B: Spam Classification - Training
+11,sgd_train_group_x_epoch1,"SGD epoch 1 groupByKey - Stage 340+341",spam.train.group_x.txt.bz2,7100000,14700000,14700000,2025-11-12 19:18:18
+12,sgd_train_group_x_epoch2,"SGD epoch 2 groupByKey - Stage 342+343",spam.train.group_x.txt.bz2,7100000,14700000,14700000,2025-11-12 19:18:20
+13,sgd_train_group_x_epoch3,"SGD epoch 3 groupByKey - Stage 344+345",spam.train.group_x.txt.bz2,7100000,14700000,14700000,2025-11-12 19:18:22
+14,sgd_train_group_x_epoch4,"SGD epoch 4 groupByKey - Stage 346+347",spam.train.group_x.txt.bz2,7100000,14700000,14700000,2025-11-12 19:18:23
+15,sgd_train_group_x_epoch5,"SGD epoch 5 groupByKey - Stage 348+349",spam.train.group_x.txt.bz2,7100000,14700000,14700000,2025-11-12 19:18:25
+
+# Part B: Spam Classification - Prediction
+16,predict_group_x_load,"Load test data for prediction",spam.test.qrels.txt.bz2,317267968,0,0,2025-11-12 19:08:00
+17,predict_group_x,"Apply model and compute predictions (broadcast join)",,0,0,0,2025-11-12 19:09:00
+
+# Part B: Ensemble
+18,ensemble_predict,"Ensemble prediction with 2 models (broadcast)",,0,0,0,2025-11-12 19:11:30
+
+# Notes:
+# - TBD values need to be captured from Spark UI during actual execution
+# - Shuffle Read/Write most important for comparing algorithms
+# - PageRank iterations should show consistent shuffle patterns
+# - SGD groupByKey creates large shuffle (all data to one reducer)
+# - Prediction stages should show broadcast join pattern (low shuffle)

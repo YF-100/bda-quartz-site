@@ -1,0 +1,9 @@
+# Outputs Directory
+
+This directory contains:
+- models/ - Trained PySpark ML models
+- predictions/ - Model predictions
+- feature_importance.csv - Feature importance rankings
+- feature_list.csv - List of all features with types
+
+Files are generated during model training and evaluation.

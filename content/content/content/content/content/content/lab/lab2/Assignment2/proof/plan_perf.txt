@@ -1,0 +1,14 @@
+=== DataFrame Execution Plan (Pairs Approach, partitions=16) ===
+
+== Physical Plan ==
+* Scan ExistingRDD (1)
+
+
+(1) Scan ExistingRDD [codegen id : 1]
+Output [4]: [word1#162, word2#163, count#164L, relative_freq#165]
+Arguments: [word1#162, word2#163, count#164L, relative_freq#165], MapPartitionsRDD[516] at applySchemaToPythonRDD at <unknown>:0, ExistingRDD, UnknownPartitioning(0)
+
+
+
+
+NOTE: This shows the DataFrame stage only. For actual shuffle patterns in RDD operations, see proof/plan_perf_rdd_lineage.txt
