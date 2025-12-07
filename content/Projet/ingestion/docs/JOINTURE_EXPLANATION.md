@@ -1,3 +1,7 @@
+---
+title: JOINTURE EXPLANATION
+---
+
 # 🔗 Explication de la Jointure Blockchain ↔ Prix
 
 ## Type de Jointure : LEFT JOIN TEMPOREL

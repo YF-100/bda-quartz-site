@@ -1,3 +1,7 @@
+---
+title: BLOCKCHAIN SAMPLING
+---
+
 # 🎯 Guide d'échantillonnage intelligent - Blockchain Novembre 2025
 
 ## Stratégie
