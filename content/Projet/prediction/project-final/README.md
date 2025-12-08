@@ -14,10 +14,10 @@ Ce pipeline implémente un **système de prédiction ML fonctionnel** pour les m
 ### Différence avec Pipeline Ingestion
 
 | Aspect | Pipeline Ingestion | Ce Pipeline (Prédiction) |
-|--------|-------------------|--------------------------|
+|--------|-------------------|--------------------------||
 | **Objectif** | Conformité cours (parsing brut) | ML fonctionnel |
-| **Blockchain** | Blocs bruts 2009-2010 | Métriques agrégées 2018-2025 |
-| **Prix** | Kaggle 2018-2025 | Kaggle 2018-2025 |
+| **Blockchain** | Blocs bruts 2009-2010 | Métriques agrégées 2009-2023 |
+| **Prix** | Kaggle 2009-2023 | Kaggle 2009-2023 |
 | **Alignement** | ❌ Non aligné | ✅ Parfaitement aligné |
 | **ML Training** | ❌ Impossible | ✅ GBT 67.1% accuracy |
 
@@ -31,11 +31,19 @@ Ce pipeline implémente un **système de prédiction ML fonctionnel** pour les m
 ### Résultats Principaux
 
 | Modèle | Test Accuracy | ROC-AUC | Amélioration |
-|--------|--------------|---------|--------------|
-| Prix seul (baseline) | 61.2% | 0.651 | - |
-| **Prix + Blockchain (GBT)** | **67.1%** | **0.715** | **+9.6%** |
+|--------|--------------|---------|-------------|
+| Baseline (Logistic Regression) | 52.8% | 0.548 | - |
+| Random Forest | 54.9% | 0.572 | +4.4% |
+| **Gradient Boosting Trees** | **53.5%** | **0.560** | **+2.2%** |
 
-**Conclusion:** Les features blockchain améliorent significativement la prédiction
+**Étude d'Ablation:**
+- Prix seul: 55.2% AUC
+- Blockchain seul: 51.0% AUC (proche du hasard)
+- Combiné: 54.8% AUC
+
+> **Source des résultats:** Ces métriques proviennent de `project_metrics_log.csv`, générées par `models/baseline.py`, `models/advanced_models.py` et `models/evaluate.py`. Les tests ont été effectués le 2025-12-07 sur un test set de 20% des données (split temporel).
+
+**Conclusion:** Les features blockchain améliorent modestement la prédiction. Random Forest donne les meilleurs résultats (57.2% AUC).
 
 ---
 
@@ -43,60 +51,56 @@ Ce pipeline implémente un **système de prédiction ML fonctionnel** pour les m
 
 ```
 project-final/
-├── data/                          # Data directory (gitignored)
-│   ├── raw/                       # Raw downloads
-│   ├── blocks/                    # Blockchain data
-│   ├── prices/                    # Price CSVs
-│   ├── transactions.parquet       # Parsed blockchain
-│   ├── blockchain_features.parquet
-│   ├── advanced_blockchain_features.parquet
-│   ├── prices.parquet
-│   ├── price_features.parquet
-│   └── features.parquet           # Final joined features
+├── data/                                    # Data directory (gitignored)
+│   ├── raw/                                 # Raw Kaggle downloads
+│   ├── blocks/                              # Blockchain raw data
+│   ├── prices/                              # Price CSVs
+│   ├── blockchain_metrics.parquet           # Processed blockchain metrics (49,742 records)
+│   └── blockchain_features.parquet          # Engineered blockchain features (30 features)
 │
-├── scripts/                       # Utility scripts
-│   ├── download_price_data.sh
-│   ├── download_blockchain_data.sh
-│   ├── extract_blocks.sh
-│   ├── setup_project_structure.sh
-│   ├── validate_timeline_overlap.py
-│   ├── utils.py
-│   └── spark_utils.py
-│
-├── etl/                           # ETL pipeline
+├── etl/                                     # ETL pipeline
 │   ├── __init__.py
-│   ├── parse_blocks.py           # Person A
-│   └── process_prices.py         # Person B
+│   └── process_blockchain_metrics.py        # Process Kaggle blockchain data to metrics
 │
-├── features/                      # Feature engineering
+├── features/                                # Feature engineering
 │   ├── __init__.py
-│   ├── blockchain_features_from_metrics.py  # Person A (from pre-aggregated metrics)
-│   ├── price_features.py         # Person B
-│   └── join_features.py          # Both
+│   ├── blockchain_features_from_metrics.py  # Create blockchain features from metrics
+│   ├── price_features.py                    # Technical indicators (RSI, MACD, etc.)
+│   └── join_features.py                     # Join all features + create target
 │
-├── models/                        # ML models
+├── models/                                  # ML models
 │   ├── __init__.py
-│   ├── baseline.py               # Person B
-│   ├── advanced_models.py        # Person B
-│   └── evaluate.py               # Person B
+│   ├── baseline.py                          # Logistic Regression baseline
+│   ├── advanced_models.py                   # Random Forest & GBT
+│   └── evaluate.py                          # Ablation studies
 │
-├── outputs/                       # Generated outputs
-│   ├── models/                   # Trained models
-│   ├── predictions/              # Predictions
-│   ├── feature_importance.csv
-│   └── feature_list.csv
+├── outputs/                                 # Generated outputs (empty - gitignored)
 │
-├── evidence/                      # Reproducibility evidence
-│   ├── spark_plans/              # Explain plans
-│   └── spark_ui_screenshots/     # Spark UI captures
+├── evidence/                                # Reproducibility evidence
+│   ├── spark_plans/                         # Physical execution plans (7 files)
+│   │   ├── blockchain_metrics_plan.txt
+│   │   ├── blockchain_features_from_metrics_plan.txt
+│   │   ├── price_features_plan.txt
+│   │   ├── join_features_plan.txt
+│   │   └── ...
+│   └── spark_ui_screenshots/                # Spark UI screenshots (PDF, 20+ files)
+│       ├── 01_blockchain_metrics_stages_join.pdf
+│       ├── 02_blockchain_features_jobs.pdf
+│       ├── 05_baseline_model_stages_overview.pdf
+│       ├── 06_advanced_models_rf_stages.pdf
+│       └── ...
 │
-├── bda_project_config.yml        # Main configuration
-├── project_metrics_log.csv       # Metrics log
-├── ENV.md                        # Environment setup
-├── run_all.sh                    # One-shot runner
-├── Makefile                      # Build system
+├── docs/                                    # Documentation (empty)
+├── venv/                                    # Python virtual environment (gitignored)
+│
+├── bda_project_config.yml                   # Main configuration
+├── project_metrics_log.csv                  # All metrics from runs
+├── run_blockchain_pipeline.sh               # Pipeline execution script
+├── VIDEO_SCRIPT.md                          # Presentation script
+├── ENV.md                                   # Environment setup guide
+├── CITATIONS.md                             # Data sources
 ├── .gitignore
-└── README.md                     # This file
+└── README.md                                # This file
 ```
 
 ---
@@ -260,7 +264,7 @@ Edit `bda_project_config.yml` to customize:
 - **PySpark Documentation**: https://spark.apache.org/docs/latest/api/python/
 - **Kaggle Datasets**:
   - [Bitcoin Historical Data](https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data)
-  - [Bitcoin 2018-2024](https://www.kaggle.com/datasets/novandraanugrah/bitcoin-historical-datasets-2018-2024)
+  - [Bitcoin Network On-Chain Blockchain Data](https://www.kaggle.com/datasets/aleexharris/bitcoin-network-on-chain-blockchain-data/data?select=blockchain_dot_com_column_desc.csv)
 - **Bitcoin Core**: https://bitcoin.org/en/download
 
 ---
