@@ -1,3 +1,12 @@
+---
+title: "blockchain_features_from_metrics.py"
+---
+
+# 📄 blockchain_features_from_metrics.py
+
+[📥 Télécharger le fichier brut](https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/features/blockchain_features_from_metrics.py)
+
+```python
 """
 Feature Engineering - Blockchain Features from Pre-aggregated Metrics
 Person A: Blockchain & ETL Specialist
@@ -363,4 +372,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
+```

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>evaluate.py</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; background: #0d1117; font-family: 'Segoe UI', sans-serif; }
+        .header { background: #161b22; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #30363d; }
+        .header h1 { margin: 0; color: #c9d1d9; font-size: 20px; }
+        .download-btn { 
+            background: #238636; color: white; padding: 8px 16px; border-radius: 6px; 
+            text-decoration: none; display: inline-block; margin-top: 10px; font-size: 14px;
+        }
+        .download-btn:hover { background: #2ea043; }
+        pre { margin: 0; border-radius: 6px; }
+        code { font-size: 14px; line-height: 1.6; }
+        .hljs { padding: 20px; background: #0d1117 !important; border: 1px solid #30363d; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 evaluate.py</h1>
+        <a href="https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/" class="download-btn">📥 Download Raw File</a>
+    </div>
+    <pre><code class="language-python">&quot;&quot;&quot;
+Machine Learning - Model Evaluation and Ablation Study
+Person B: Price Data &amp; Modelling Specialist
+
+This script:
+1. Loads trained models
+2. Evaluates on test set
+3. Runs ablation study (price-only, blockchain-only, combined)
+4. Generates comparison metrics
+&quot;&quot;&quot;
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.classification import LogisticRegressionModel, RandomForestClassificationModel, GBTClassificationModel
+from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
+from pyspark.ml import PipelineModel
+import yaml
+import os
+from datetime import datetime
+
+
+def load_config(config_path=&quot;bda_project_config.yml&quot;):
+    &quot;&quot;&quot;Load configuration from YAML file.&quot;&quot;&quot;
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def create_spark_session(config):
+    &quot;&quot;&quot;Create and configure SparkSession.&quot;&quot;&quot;
+    spark = SparkSession.builder \
+        .appName(config['spark']['app_name'] + &quot;_Evaluate&quot;) \
+        .master(config['spark']['master']) \
+        .config(&quot;spark.driver.memory&quot;, config['spark']['driver_memory']) \
+        .config(&quot;spark.executor.memory&quot;, config['spark']['executor_memory']) \
+        .config(&quot;spark.sql.shuffle.partitions&quot;, config['spark']['shuffle_partitions']) \
+        .config(&quot;spark.ui.enabled&quot;, &quot;true&quot;) \
+        .config(&quot;spark.ui.port&quot;, &quot;4040&quot;) \
+        .getOrCreate()
+    
+    spark.sparkContext.setLogLevel(config['spark']['log_level'])
+    
+    # Print Spark UI URL
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+        print(&quot;   Open this URL in your browser to view Spark UI\n&quot;)
+    
+    return spark
+
+
+def load_test_data(spark, config):
+    &quot;&quot;&quot;Load and split data to get test set.&quot;&quot;&quot;
+    input_path = config['paths']['features_parquet']
+    
+    df = spark.read.parquet(input_path)
+    df = df.filter(col(&quot;direction_label&quot;).isNotNull())
+    df = df.orderBy(&quot;timestamp&quot;)
+    
+    total_count = df.count()
+    train_ratio = config['training']['train_ratio']
+    val_ratio = config['training']['validation_ratio']
+    test_start = int(total_count * (train_ratio + val_ratio))
+    
+    from pyspark.sql.window import Window
+    from pyspark.sql.functions import row_number
+    
+    window_spec = Window.orderBy(&quot;timestamp&quot;)
+    df_numbered = df.withColumn(&quot;row_num&quot;, row_number().over(window_spec))
+    
+    test_df = df_numbered.filter(col(&quot;row_num&quot;) &gt; test_start).drop(&quot;row_num&quot;)
+    
+    print(f&quot;Test set: {test_df.count()} records&quot;)
+    
+    return test_df
+
+
+def filter_features(df, feature_prefixes):
+    &quot;&quot;&quot;
+    Filter DataFrame to include only features matching given prefixes.
+    
+    Args:
+        df: Input DataFrame
+        feature_prefixes: List of prefixes to keep (empty = keep all)
+    
+    Returns:
+        DataFrame with filtered features
+    &quot;&quot;&quot;
+    if not feature_prefixes:
+        return df
+    
+    # Always keep these columns
+    keep_cols = [&quot;timestamp&quot;, &quot;timestamp_hour&quot;, &quot;direction_label&quot;, &quot;return_magnitude&quot;]
+    
+    # Find columns matching prefixes
+    for col_name in df.columns:
+        if col_name in keep_cols:
+            continue
+        
+        for prefix in feature_prefixes:
+            if col_name.startswith(prefix):
+                keep_cols.append(col_name)
+                break
+    
+    return df.select(keep_cols)
+
+
+def run_ablation_study(spark, test_df, config):
+    &quot;&quot;&quot;
+    Run ablation study with different feature sets:
+    1. Price features only
+    2. Blockchain features only
+    3. Combined features
+    &quot;&quot;&quot;
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;ABLATION STUDY&quot;)
+    print(&quot;=&quot;*60)
+    
+    from pyspark.ml.feature import VectorAssembler, StandardScaler
+    from pyspark.ml.classification import LogisticRegression
+    from pyspark.ml import Pipeline
+    
+    # Get train data for fitting models
+    input_path = config['paths']['features_parquet']
+    df = spark.read.parquet(input_path)
+    df = df.filter(col(&quot;direction_label&quot;).isNotNull())
+    df = df.orderBy(&quot;timestamp&quot;)
+    
+    total_count = df.count()
+    train_ratio = config['training']['train_ratio']
+    train_end = int(total_count * train_ratio)
+    
+    from pyspark.sql.window import Window
+    from pyspark.sql.functions import row_number
+    
+    window_spec = Window.orderBy(&quot;timestamp&quot;)
+    df_numbered = df.withColumn(&quot;row_num&quot;, row_number().over(window_spec))
+    train_df = df_numbered.filter(col(&quot;row_num&quot;) &lt;= train_end).drop(&quot;row_num&quot;)
+    
+    results = []
+    metrics_log = config['paths']['metrics_log']
+    
+    # Run each ablation experiment
+    for experiment in config['evaluation']['ablation_experiments']:
+        exp_name = experiment['name']
+        feature_prefix = experiment['feature_prefix']
+        
+        print(f&quot;\n--- Experiment: {exp_name} ---&quot;)
+        
+        # Filter features
+        train_filtered = filter_features(train_df, feature_prefix)
+        test_filtered = filter_features(test_df, feature_prefix)
+        
+        # Get feature columns
+        exclude = [&quot;timestamp&quot;, &quot;timestamp_hour&quot;, &quot;direction_label&quot;, &quot;return_magnitude&quot;]
+        feature_cols = [c for c in train_filtered.columns if c not in exclude]
+        
+        print(f&quot;Using {len(feature_cols)} features&quot;)
+        
+        if len(feature_cols) == 0:
+            print(f&quot;No features found for {exp_name}, skipping...&quot;)
+            continue
+        
+        # Build simple pipeline
+        assembler = VectorAssembler(
+            inputCols=feature_cols,
+            outputCol=&quot;features_raw&quot;,
+            handleInvalid=&quot;skip&quot;
+        )
+        
+        scaler = StandardScaler(
+            inputCol=&quot;features_raw&quot;,
+            outputCol=&quot;features&quot;,
+            withStd=True,
+            withMean=True
+        )
+        
+        lr = LogisticRegression(
+            featuresCol=&quot;features&quot;,
+            labelCol=&quot;direction_label&quot;,
+            maxIter=100,
+            regParam=0.01
+        )
+        
+        pipeline = Pipeline(stages=[assembler, scaler, lr])
+        
+        # Train
+        print(&quot;Training model...&quot;)
+        model = pipeline.fit(train_filtered)
+        
+        # Evaluate
+        print(&quot;Evaluating...&quot;)
+        metrics = evaluate_model_simple(model, test_filtered)
+        
+        # Log metrics
+        log_metrics(metrics, f&quot;ablation_{exp_name}&quot;, &quot;test&quot;, metrics_log)
+        
+        results.append({
+            'experiment': exp_name,
+            'num_features': len(feature_cols),
+            'metrics': metrics
+        })
+    
+    # Print comparison
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;ABLATION STUDY RESULTS&quot;)
+    print(&quot;=&quot;*60)
+    
+    for result in results:
+        print(f&quot;\n{result['experiment']} ({result['num_features']} features):&quot;)
+        for metric, value in result['metrics'].items():
+            print(f&quot;  {metric}: {value:.4f}&quot;)
+
+
+def evaluate_model_simple(model, df):
+    &quot;&quot;&quot;Simple evaluation function.&quot;&quot;&quot;
+    predictions = model.transform(df)
+    
+    binary_evaluator = BinaryClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        rawPredictionCol=&quot;rawPrediction&quot;,
+        metricName=&quot;areaUnderROC&quot;
+    )
+    auc = binary_evaluator.evaluate(predictions)
+    
+    multi_evaluator = MulticlassClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        predictionCol=&quot;prediction&quot;
+    )
+    
+    multi_evaluator.setMetricName(&quot;accuracy&quot;)
+    accuracy = multi_evaluator.evaluate(predictions)
+    
+    multi_evaluator.setMetricName(&quot;f1&quot;)
+    f1 = multi_evaluator.evaluate(predictions)
+    
+    return {
+        'accuracy': accuracy,
+        'f1': f1,
+        'auc': auc
+    }
+
+
+def load_and_evaluate_model(model_path, test_df, model_name):
+    &quot;&quot;&quot;Load a trained model and evaluate on test set.&quot;&quot;&quot;
+    print(f&quot;\n--- Evaluating {model_name} ---&quot;)
+    
+    if not os.path.exists(model_path):
+        print(f&quot;Model not found: {model_path}&quot;)
+        return None
+    
+    # Load model
+    model = PipelineModel.load(model_path)
+    
+    # Make predictions
+    predictions = model.transform(test_df)
+    
+    # Evaluate
+    binary_evaluator = BinaryClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        rawPredictionCol=&quot;rawPrediction&quot;,
+        metricName=&quot;areaUnderROC&quot;
+    )
+    auc = binary_evaluator.evaluate(predictions)
+    
+    multi_evaluator = MulticlassClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        predictionCol=&quot;prediction&quot;
+    )
+    
+    multi_evaluator.setMetricName(&quot;accuracy&quot;)
+    accuracy = multi_evaluator.evaluate(predictions)
+    
+    multi_evaluator.setMetricName(&quot;f1&quot;)
+    f1 = multi_evaluator.evaluate(predictions)
+    
+    print(f&quot;Accuracy: {accuracy:.4f} | F1: {f1:.4f} | AUC: {auc:.4f}&quot;)
+    
+    return {
+        'accuracy': accuracy,
+        'f1': f1,
+        'auc': auc
+    }, predictions
+
+
+def log_metrics(metrics, run_id, stage, log_path):
+    &quot;&quot;&quot;Log metrics to CSV.&quot;&quot;&quot;
+    if log_path and os.path.dirname(log_path):
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    
+    file_exists = os.path.exists(log_path)
+    
+    with open(log_path, 'a') as f:
+        if not file_exists:
+            f.write(&quot;run_id,stage,metric,value,timestamp\n&quot;)
+        
+        timestamp = datetime.now().isoformat()
+        for metric_name, value in metrics.items():
+            f.write(f&quot;{run_id},{stage},{metric_name},{value},{timestamp}\n&quot;)
+
+
+def generate_comparison_report(config):
+    &quot;&quot;&quot;Generate comparison report from metrics log.&quot;&quot;&quot;
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;MODEL COMPARISON REPORT&quot;)
+    print(&quot;=&quot;*60)
+    
+    metrics_log = config['paths']['metrics_log']
+    
+    if not os.path.exists(metrics_log):
+        print(&quot;No metrics log found.&quot;)
+        return
+    
+    # Read metrics log
+    with open(metrics_log, 'r') as f:
+        lines = f.readlines()
+    
+    # Parse and group by model
+    models = {}
+    for line in lines[1:]:  # Skip header
+        parts = line.strip().split(',')
+        if len(parts) &lt; 5:
+            continue
+        
+        run_id, stage, metric, value = parts[0], parts[1], parts[2], parts[3]
+        
+        if stage == &quot;test&quot;:
+            if run_id not in models:
+                models[run_id] = {}
+            models[run_id][metric] = float(value)
+    
+    # Print comparison
+    for model_name, metrics in models.items():
+        print(f&quot;\n{model_name}:&quot;)
+        for metric, value in metrics.items():
+            print(f&quot;  {metric}: {value:.4f}&quot;)
+
+
+def main():
+    &quot;&quot;&quot;Main execution function.&quot;&quot;&quot;
+    print(&quot;=&quot;*60)
+    print(&quot;BDA Project - Model Evaluation &amp; Ablation Study&quot;)
+    print(&quot;=&quot;*60)
+    
+    # Load configuration
+    config = load_config()
+    
+    # Create Spark session
+    spark = create_spark_session(config)
+    
+    # Load test data
+    test_df = load_test_data(spark, config)
+    
+    # Run ablation study
+    run_ablation_study(spark, test_df, config)
+    
+    # Generate comparison report
+    generate_comparison_report(config)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;Evaluation completed successfully!&quot;)
+    print(&quot;=&quot;*60)
+    
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+        print(&quot;   Open this URL in your browser to take screenshots&quot;)
+    else:
+        print(&quot;\nSpark UI: http://localhost:4040 (or check terminal output)&quot;)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;SCREENSHOT GUIDE:&quot;)
+    print(&quot;=&quot;*60)
+    print(&quot;Take screenshots of:&quot;)
+    print(&quot;  1. Jobs tab: 07_evaluate_jobs.png&quot;)
+    print(&quot;  2. Stages tab: 07_evaluate_stages.png&quot;)
+    print(&quot;\nSpark will stay alive until you press Enter...&quot;)
+    print(&quot;=&quot;*60)
+    
+    try:
+        input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+    
+    # Stop Spark
+    spark.stop()
+    print(&quot;Spark stopped.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

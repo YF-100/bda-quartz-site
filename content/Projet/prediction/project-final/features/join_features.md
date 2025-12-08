@@ -1,3 +1,12 @@
+---
+title: "join_features.py"
+---
+
+# 📄 join_features.py
+
+[📥 Télécharger le fichier brut](https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/features/join_features.py)
+
+```python
 """
 Feature Engineering - Join Price and Blockchain Features
 Joins price features with blockchain features (if available) for model training.
@@ -352,4 +361,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
+```

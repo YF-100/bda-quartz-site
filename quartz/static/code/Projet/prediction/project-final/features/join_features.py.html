@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>join_features.py</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; background: #0d1117; font-family: 'Segoe UI', sans-serif; }
+        .header { background: #161b22; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #30363d; }
+        .header h1 { margin: 0; color: #c9d1d9; font-size: 20px; }
+        .download-btn { 
+            background: #238636; color: white; padding: 8px 16px; border-radius: 6px; 
+            text-decoration: none; display: inline-block; margin-top: 10px; font-size: 14px;
+        }
+        .download-btn:hover { background: #2ea043; }
+        pre { margin: 0; border-radius: 6px; }
+        code { font-size: 14px; line-height: 1.6; }
+        .hljs { padding: 20px; background: #0d1117 !important; border: 1px solid #30363d; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 join_features.py</h1>
+        <a href="https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/" class="download-btn">📥 Download Raw File</a>
+    </div>
+    <pre><code class="language-python">&quot;&quot;&quot;
+Feature Engineering - Join Price and Blockchain Features
+Joins price features with blockchain features (if available) for model training.
+&quot;&quot;&quot;
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, date_trunc
+import yaml
+import os
+
+
+def load_config(config_path=&quot;bda_project_config.yml&quot;):
+    &quot;&quot;&quot;Load configuration from YAML file.&quot;&quot;&quot;
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def create_spark_session(config):
+    &quot;&quot;&quot;Create and configure SparkSession.&quot;&quot;&quot;
+    spark = SparkSession.builder \
+        .appName(config['spark']['app_name'] + &quot;_JoinFeatures&quot;) \
+        .master(config['spark']['master']) \
+        .config(&quot;spark.driver.memory&quot;, config['spark']['driver_memory']) \
+        .config(&quot;spark.executor.memory&quot;, config['spark']['executor_memory']) \
+        .config(&quot;spark.sql.shuffle.partitions&quot;, config['spark']['shuffle_partitions']) \
+        .config(&quot;spark.ui.enabled&quot;, &quot;true&quot;) \
+        .config(&quot;spark.ui.port&quot;, &quot;4040&quot;) \
+        .getOrCreate()
+    
+    spark.sparkContext.setLogLevel(config['spark']['log_level'])
+    
+    # Print Spark UI URL
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+        print(&quot;   Open this URL in your browser to view Spark UI\n&quot;)
+    
+    return spark
+
+
+def load_price_features(spark, price_features_path):
+    &quot;&quot;&quot;Load price features.&quot;&quot;&quot;
+    print(f&quot;Loading price features from: {price_features_path}&quot;)
+    
+    # Set job description for Spark UI
+    spark.sparkContext.setJobGroup(&quot;join_features&quot;, 
+                                    &quot;LOAD: price features from Parquet&quot;)
+    
+    df_price = spark.read.parquet(price_features_path)
+    print(f&quot;Loaded {df_price.count()} price feature records&quot;)
+    return df_price
+
+
+def load_blockchain_features(spark, blockchain_features_path):
+    &quot;&quot;&quot;Load blockchain features if available.&quot;&quot;&quot;
+    if not os.path.exists(blockchain_features_path):
+        print(f&quot;\nBlockchain features not found at: {blockchain_features_path}&quot;)
+        print(&quot;Proceeding with price features only&quot;)
+        return None
+    
+    print(f&quot;\nLoading blockchain features from: {blockchain_features_path}&quot;)
+    
+    # Set job description for Spark UI
+    spark.sparkContext.setJobGroup(&quot;join_features&quot;, 
+                                    &quot;LOAD: blockchain features from Parquet&quot;)
+    
+    df_blockchain = spark.read.parquet(blockchain_features_path)
+    print(f&quot;Loaded {df_blockchain.count()} blockchain feature records&quot;)
+    
+    return df_blockchain
+
+
+def join_price_and_blockchain(df_price, df_blockchain):
+    &quot;&quot;&quot;Join price and blockchain features on timestamp.&quot;&quot;&quot;
+    if df_blockchain is None:
+        print(&quot;\n=== Skipping blockchain join (no blockchain data) ===&quot;)
+        return df_price
+    
+    print(&quot;\n=== Joining price and blockchain features ===&quot;)
+    
+    # Set job description for Spark UI - MOST IMPORTANT!
+    spark = df_price.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;join_features&quot;, 
+                                    &quot;JOIN: price and blockchain - Most important - Check shuffle operations&quot;)
+    
+    # Round both to hour for joining
+    from pyspark.sql.functions import date_trunc
+    
+    df_price = df_price.withColumn(&quot;ts_hour&quot;, date_trunc(&quot;hour&quot;, col(&quot;timestamp&quot;)))
+    df_blockchain = df_blockchain.withColumn(&quot;ts_hour&quot;, date_trunc(&quot;hour&quot;, col(&quot;timestamp&quot;)))
+    
+    # Get blockchain columns (exclude timestamp to avoid duplicate)
+    blockchain_cols = [c for c in df_blockchain.columns if c not in [&quot;timestamp&quot;, &quot;hour_of_day&quot;, &quot;day_of_week&quot;]]
+    df_blockchain_clean = df_blockchain.select(&quot;ts_hour&quot;, *blockchain_cols)
+    
+    print(f&quot;Price columns: {len(df_price.columns)}&quot;)
+    print(f&quot;Blockchain columns to join: {len(blockchain_cols)}&quot;)
+    
+    # Join
+    df_joined = df_price.join(df_blockchain_clean, on=&quot;ts_hour&quot;, how=&quot;inner&quot;)
+    df_joined = df_joined.drop(&quot;ts_hour&quot;)
+    
+    print(f&quot;Joined: {df_joined.count()} records, {len(df_joined.columns)} columns&quot;)
+    
+    return df_joined
+
+
+def normalize_timestamps(df_price, join_key=&quot;timestamp_hour&quot;):
+    &quot;&quot;&quot;Normalize timestamps to common granularity.&quot;&quot;&quot;
+    print(f&quot;\n=== Normalizing timestamps (key: {join_key}) ===&quot;)
+    df_price = df_price.withColumn(join_key, date_trunc(&quot;hour&quot;, col(&quot;timestamp&quot;)))
+    return df_price
+
+
+def filter_target_period(df, start_date=&quot;2018-01-01&quot;, end_date=&quot;2024-12-31&quot;):
+    &quot;&quot;&quot;Filter data to target period.&quot;&quot;&quot;
+    print(f&quot;\n=== Filtering to target period: {start_date} to {end_date} ===&quot;)
+    df_filtered = df.filter(
+        (col(&quot;timestamp&quot;) &gt;= start_date) &amp; 
+        (col(&quot;timestamp&quot;) &lt;= end_date)
+    )
+    print(f&quot;Records after filtering: {df_filtered.count()}&quot;)
+    return df_filtered
+
+
+def create_target_variables(df):
+    &quot;&quot;&quot;Create target variables for prediction.&quot;&quot;&quot;
+    print(&quot;\n=== Creating target variables ===&quot;)
+    
+    from pyspark.sql.window import Window
+    from pyspark.sql.functions import lead, when
+    
+    # Set job description for Spark UI
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;join_features&quot;, 
+                                    &quot;TARGET: creating direction label and return magnitude&quot;)
+    
+    # Create window for next hour price
+    window_spec = Window.orderBy(&quot;timestamp&quot;)
+    
+    # Get next hour's close price
+    df = df.withColumn(&quot;next_close&quot;, lead(&quot;close&quot;, 1).over(window_spec))
+    
+    # Direction label: 1 if price goes up, 0 if down
+    df = df.withColumn(
+        &quot;direction_label&quot;,
+        when(col(&quot;next_close&quot;) &gt; col(&quot;close&quot;), 1).otherwise(0)
+    )
+    
+    # Return magnitude (log return)
+    df = df.withColumn(
+        &quot;return_magnitude&quot;,
+        when(col(&quot;close&quot;) != 0,
+             (col(&quot;next_close&quot;) - col(&quot;close&quot;)) / col(&quot;close&quot;))
+        .otherwise(0.0)
+    )
+    
+    # Drop next_close (temporary column)
+    df = df.drop(&quot;next_close&quot;)
+    
+    # Remove rows where target is null (last row)
+    df = df.filter(col(&quot;direction_label&quot;).isNotNull())
+    
+    print(f&quot;Target variable created. Records: {df.count()}&quot;)
+    return df
+
+
+def validate_features(df):
+    &quot;&quot;&quot;Validate final features.&quot;&quot;&quot;
+    print(&quot;\n=== Final Features Validation ===&quot;)
+    
+    print(f&quot;Total records: {df.count()}&quot;)
+    print(f&quot;Total features: {len(df.columns)}&quot;)
+    
+    # List feature categories
+    price_features = [c for c in df.columns if c not in [
+        &quot;timestamp&quot;, &quot;timestamp_hour&quot;, &quot;direction_label&quot;, &quot;return_magnitude&quot;
+    ]]
+    
+    print(f&quot;\nPrice features: {len(price_features)}&quot;)
+    print(f&quot;Target variables: direction_label, return_magnitude&quot;)
+    
+    # Show sample
+    print(&quot;\nSample features:&quot;)
+    sample_cols = [&quot;timestamp&quot;, &quot;close&quot;, &quot;ma_7&quot;, &quot;rsi&quot;, &quot;direction_label&quot;]
+    available_cols = [c for c in sample_cols if c in df.columns]
+    df.select(available_cols).show(5, truncate=False)
+    
+    # Target distribution
+    print(&quot;\nTarget distribution:&quot;)
+    df.groupBy(&quot;direction_label&quot;).count().show()
+    
+    return df
+
+
+def optimize_and_save(df, output_path, num_partitions=4):
+    &quot;&quot;&quot;Optimize DataFrame and save as Parquet.&quot;&quot;&quot;
+    print(f&quot;\n=== Optimizing and Saving ===&quot;)
+    
+    # Set job description for Spark UI
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;join_features&quot;, 
+                                    &quot;SAVE: writing joined features to Parquet&quot;)
+    
+    # Sort by timestamp for time-based splits
+    df = df.orderBy(&quot;timestamp&quot;)
+    
+    df_optimized = df.coalesce(num_partitions)
+    
+    print(f&quot;Saving to: {output_path}&quot;)
+    df_optimized.write.mode(&quot;overwrite&quot;).parquet(output_path)
+    
+    print(f&quot;Successfully saved {df.count()} feature records to {output_path}&quot;)
+    
+    return df_optimized
+
+
+def save_feature_list(df, output_path):
+    &quot;&quot;&quot;Save list of features to CSV.&quot;&quot;&quot;
+    print(f&quot;\n=== Saving feature list ===&quot;)
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    with open(output_path, 'w') as f:
+        f.write(&quot;feature_name,feature_type\n&quot;)
+        for col_name in df.columns:
+            if col_name in [&quot;timestamp&quot;, &quot;timestamp_hour&quot;]:
+                f.write(f&quot;{col_name},timestamp\n&quot;)
+            elif col_name in [&quot;direction_label&quot;, &quot;return_magnitude&quot;]:
+                f.write(f&quot;{col_name},target\n&quot;)
+            else:
+                f.write(f&quot;{col_name},price\n&quot;)
+    
+    print(f&quot;Feature list saved to: {output_path}&quot;)
+
+
+def main():
+    &quot;&quot;&quot;Main execution function.&quot;&quot;&quot;
+    print(&quot;=&quot;*60)
+    print(&quot;BDA Project - Join Price and Blockchain Features&quot;)
+    print(&quot;=&quot;*60)
+    
+    # Load configuration
+    config = load_config()
+    
+    # Create Spark session
+    spark = create_spark_session(config)
+    
+    # Get paths from config
+    price_features_path = config['paths']['price_features_parquet']
+    blockchain_features_path = config['paths'].get('blockchain_features_parquet', 
+                                                     'data/blockchain_features.parquet')
+    output_path = config['paths']['features_parquet']
+    
+    join_key = config['features']['join_key']
+    
+    # Load price features
+    print(&quot;\n[STEP 1/5] Loading price features...&quot;)
+    print(&quot;   Look for Job: 'LOAD: price features from Parquet'&quot;)
+    df_price = load_price_features(spark, price_features_path)
+    
+    # Load blockchain features
+    print(&quot;\n[STEP 2/5] Loading blockchain features...&quot;)
+    print(&quot;   Look for Job: 'LOAD: blockchain features from Parquet'&quot;)
+    df_blockchain = load_blockchain_features(spark, blockchain_features_path)
+    
+    # Normalize timestamps
+    df_price = normalize_timestamps(df_price, join_key)
+    
+    # Filter to target period (2018-2024)
+    target_start = config['blockchain']['target_start']
+    target_end = config['blockchain']['target_end']
+    df_price = filter_target_period(df_price, target_start, target_end)
+    
+    # Join with blockchain features if available
+    print(&quot;\n[STEP 3/5] Joining price and blockchain features...&quot;)
+    print(&quot;   Look for Job: 'JOIN: price and blockchain' - Most important!&quot;)
+    print(&quot;   Warning: This step has SHUFFLE operations - check Shuffle Read/Write sizes&quot;)
+    df_combined = join_price_and_blockchain(df_price, df_blockchain)
+    
+    # Create target variables
+    print(&quot;\n[STEP 4/5] Creating target variables...&quot;)
+    print(&quot;   Look for Job: 'TARGET: creating direction label and return magnitude'&quot;)
+    df_final = create_target_variables(df_combined)
+    
+    # Validate
+    df_final = validate_features(df_final)
+    
+    # Optimize and save
+    print(&quot;\n[STEP 5/5] Saving to Parquet...&quot;)
+    print(&quot;   Look for Job: 'SAVE: writing joined features to Parquet'&quot;)
+    df_final = optimize_and_save(df_final, output_path, num_partitions=4)
+    
+    # Save feature list
+    feature_list_output = f&quot;{config['paths']['outputs_dir']}/feature_list.csv&quot;
+    save_feature_list(df_final, feature_list_output)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;Feature joining completed successfully!&quot;)
+    print(&quot;=&quot;*60)
+    
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+    else:
+        print(&quot;\nSpark UI: http://localhost:4040 (or check terminal output)&quot;)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;SCREENSHOT GUIDE - Which Jobs to Capture:&quot;)
+    print(&quot;=&quot;*60)
+    print(&quot;\nNOTE: You will see MANY jobs with the same description.&quot;)
+    print(&quot;   This is normal - Spark creates a new job for each action.&quot;)
+    print(&quot;\nSOLUTION: Pick ONE representative job for each type:&quot;)
+    print(&quot;\n   1. MOST IMPORTANT: 'JOIN: price and blockchain - Most important - Check shuffle operations'&quot;)
+    print(&quot;      -&gt; Look for the job with:&quot;)
+    print(&quot;         - Highest Job ID (most recent, usually at the top)&quot;)
+    print(&quot;         - OR longest Duration (takes most time)&quot;)
+    print(&quot;         - OR most Stages (3/3 or 2/2)&quot;)
+    print(&quot;      -&gt; This shows SHUFFLE operations - check Shuffle Read/Write!&quot;)
+    print(&quot;      -&gt; Go to Stages tab -&gt; find Stage with Shuffle Read/Write&quot;)
+    print(&quot;      -&gt; Take screenshot of that Stage (shows Shuffle sizes)&quot;)
+    print(&quot;\n   2. 'TARGET: creating direction label and return magnitude'&quot;)
+    print(&quot;      -&gt; Pick any one&quot;)
+    print(&quot;\n   3. 'LOAD: ...' jobs&quot;)
+    print(&quot;      -&gt; Pick any one (they're all similar)&quot;)
+    print(&quot;\n   4. 'SAVE: writing joined features to Parquet'&quot;)
+    print(&quot;      -&gt; Pick the one with longest Duration&quot;)
+    print(&quot;\nSteps to take screenshots:&quot;)
+    print(&quot;   1. Open Spark UI -&gt; Jobs tab&quot;)
+    print(&quot;   2. Sort by 'Submitted Time' (newest first) or 'Duration' (longest first)&quot;)
+    print(&quot;   3. For JOIN: Click the TOP job (highest Job ID)&quot;)
+    print(&quot;   4. Go to Stages tab -&gt; find Stage with Shuffle Read/Write&quot;)
+    print(&quot;   5. Take screenshot of that Stage (shows Shuffle sizes)&quot;)
+    print(&quot;   6. Go to SQL tab -&gt; take screenshot of JOIN query plan&quot;)
+    print(&quot;   7. Jobs overview (all jobs list)&quot;)
+    print(&quot;\nTIP: You need 3 screenshots:&quot;)
+    print(&quot;   - One JOIN job Stage (shows Shuffle - MOST IMPORTANT)&quot;)
+    print(&quot;   - SQL tab (JOIN query plan)&quot;)
+    print(&quot;   - Jobs overview (all jobs list)&quot;)
+    print(&quot;\nSpark will stay alive until you press Enter...&quot;)
+    print(&quot;=&quot;*60)
+    
+    try:
+        input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+    
+    # Stop Spark
+    spark.stop()
+    print(&quot;Spark stopped.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

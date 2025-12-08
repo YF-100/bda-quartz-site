@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>advanced_models.py</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; background: #0d1117; font-family: 'Segoe UI', sans-serif; }
+        .header { background: #161b22; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #30363d; }
+        .header h1 { margin: 0; color: #c9d1d9; font-size: 20px; }
+        .download-btn { 
+            background: #238636; color: white; padding: 8px 16px; border-radius: 6px; 
+            text-decoration: none; display: inline-block; margin-top: 10px; font-size: 14px;
+        }
+        .download-btn:hover { background: #2ea043; }
+        pre { margin: 0; border-radius: 6px; }
+        code { font-size: 14px; line-height: 1.6; }
+        .hljs { padding: 20px; background: #0d1117 !important; border: 1px solid #30363d; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 advanced_models.py</h1>
+        <a href="https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/" class="download-btn">📥 Download Raw File</a>
+    </div>
+    <pre><code class="language-python">&quot;&quot;&quot;
+Machine Learning - Advanced Models (Random Forest, GBT)
+Person B: Price Data &amp; Modelling Specialist
+
+This script trains advanced tree-based models with hyperparameter tuning.
+&quot;&quot;&quot;
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.ml.feature import VectorAssembler, StandardScaler
+from pyspark.ml.classification import RandomForestClassifier, GBTClassifier
+from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
+from pyspark.ml.tuning import ParamGridBuilder, TrainValidationSplit
+from pyspark.ml import Pipeline
+import yaml
+import os
+from datetime import datetime
+
+
+def load_config(config_path=&quot;bda_project_config.yml&quot;):
+    &quot;&quot;&quot;Load configuration from YAML file.&quot;&quot;&quot;
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def create_spark_session(config):
+    &quot;&quot;&quot;Create and configure SparkSession.&quot;&quot;&quot;
+    spark = SparkSession.builder \
+        .appName(config['spark']['app_name'] + &quot;_AdvancedModels&quot;) \
+        .master(config['spark']['master']) \
+        .config(&quot;spark.driver.memory&quot;, config['spark']['driver_memory']) \
+        .config(&quot;spark.executor.memory&quot;, config['spark']['executor_memory']) \
+        .config(&quot;spark.sql.shuffle.partitions&quot;, config['spark']['shuffle_partitions']) \
+        .config(&quot;spark.ui.enabled&quot;, &quot;true&quot;) \
+        .config(&quot;spark.ui.port&quot;, &quot;4040&quot;) \
+        .getOrCreate()
+    
+    spark.sparkContext.setLogLevel(config['spark']['log_level'])
+    
+    # Print Spark UI URL
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+        print(&quot;   Open this URL in your browser to view Spark UI\n&quot;)
+    
+    return spark
+
+
+def load_and_split_data(spark, config):
+    &quot;&quot;&quot;Load features and perform time-based split.&quot;&quot;&quot;
+    input_path = config['paths']['features_parquet']
+    
+    print(f&quot;Loading features from: {input_path}&quot;)
+    
+    # Set job description for Spark UI
+    spark.sparkContext.setJobGroup(&quot;advanced_models&quot;, 
+                                    &quot;LOAD: loading features and splitting data&quot;)
+    
+    df = spark.read.parquet(input_path)
+    df = df.filter(col(&quot;direction_label&quot;).isNotNull())
+    
+    # Sort by timestamp
+    df = df.orderBy(&quot;timestamp&quot;)
+    
+    # Calculate split points
+    total_count = df.count()
+    train_ratio = config['training']['train_ratio']
+    val_ratio = config['training']['validation_ratio']
+    
+    train_end = int(total_count * train_ratio)
+    val_end = int(total_count * (train_ratio + val_ratio))
+    
+    # Create row number
+    from pyspark.sql.window import Window
+    from pyspark.sql.functions import row_number
+    
+    window_spec = Window.orderBy(&quot;timestamp&quot;)
+    df_numbered = df.withColumn(&quot;row_num&quot;, row_number().over(window_spec))
+    
+    # Split
+    train_df = df_numbered.filter(col(&quot;row_num&quot;) &lt;= train_end).drop(&quot;row_num&quot;)
+    val_df = df_numbered.filter((col(&quot;row_num&quot;) &gt; train_end) &amp; (col(&quot;row_num&quot;) &lt;= val_end)).drop(&quot;row_num&quot;)
+    test_df = df_numbered.filter(col(&quot;row_num&quot;) &gt; val_end).drop(&quot;row_num&quot;)
+    
+    print(f&quot;Train: {train_df.count()} | Val: {val_df.count()} | Test: {test_df.count()}&quot;)
+    
+    return train_df, val_df, test_df
+
+
+def get_feature_columns(df, exclude_cols):
+    &quot;&quot;&quot;Get list of feature columns.&quot;&quot;&quot;
+    default_exclude = [&quot;timestamp&quot;, &quot;timestamp_hour&quot;, &quot;direction_label&quot;, &quot;return_magnitude&quot;]
+    exclude_cols = list(set(default_exclude + exclude_cols))
+    
+    feature_cols = [c for c in df.columns if c not in exclude_cols]
+    
+    print(f&quot;Using {len(feature_cols)} features&quot;)
+    
+    return feature_cols
+
+
+def build_rf_pipeline(feature_cols, config):
+    &quot;&quot;&quot;Build Random Forest pipeline with hyperparameter tuning.&quot;&quot;&quot;
+    print(&quot;\n=== Building Random Forest Pipeline ===&quot;)
+    
+    # Assemble features
+    assembler = VectorAssembler(
+        inputCols=feature_cols,
+        outputCol=&quot;features&quot;,
+        handleInvalid=&quot;skip&quot;
+    )
+    
+    # Random Forest (no need for scaling with tree-based models)
+    rf_params = config['models']['random_forest']
+    rf = RandomForestClassifier(
+        featuresCol=&quot;features&quot;,
+        labelCol=&quot;direction_label&quot;,
+        numTrees=rf_params['num_trees'],
+        maxDepth=rf_params['max_depth'],
+        maxBins=rf_params['max_bins'],
+        minInstancesPerNode=rf_params['min_instances_per_node'],
+        seed=config['training']['random_seed']
+    )
+    
+    pipeline = Pipeline(stages=[assembler, rf])
+    
+    return pipeline
+
+
+def build_gbt_pipeline(feature_cols, config):
+    &quot;&quot;&quot;Build Gradient Boosted Trees pipeline.&quot;&quot;&quot;
+    print(&quot;\n=== Building Gradient Boosted Trees Pipeline ===&quot;)
+    
+    # Assemble features
+    assembler = VectorAssembler(
+        inputCols=feature_cols,
+        outputCol=&quot;features&quot;,
+        handleInvalid=&quot;skip&quot;
+    )
+    
+    # GBT
+    gbt_params = config['models']['gradient_boosted_trees']
+    gbt = GBTClassifier(
+        featuresCol=&quot;features&quot;,
+        labelCol=&quot;direction_label&quot;,
+        maxIter=gbt_params['max_iter'],
+        maxDepth=gbt_params['max_depth'],
+        stepSize=gbt_params['step_size'],
+        maxBins=gbt_params['max_bins'],
+        seed=config['training']['random_seed']
+    )
+    
+    pipeline = Pipeline(stages=[assembler, gbt])
+    
+    return pipeline
+
+
+def train_with_tuning(pipeline, train_df, val_df, model_type=&quot;rf&quot;):
+    &quot;&quot;&quot;Train model with hyperparameter tuning.&quot;&quot;&quot;
+    print(f&quot;\n=== Training {model_type.upper()} with Tuning ===&quot;)
+    print(f&quot;   Look for Job: 'TRAIN: {model_type.upper()} with hyperparameter tuning (Tree-based model)'&quot;)
+    
+    # Set job description for Spark UI - MOST IMPORTANT!
+    spark = train_df.sql_ctx.sparkSession
+    model_name = &quot;Random Forest&quot; if model_type == &quot;rf&quot; else &quot;Gradient Boosted Trees&quot;
+    spark.sparkContext.setJobGroup(&quot;advanced_models&quot;, 
+                                    f&quot;TRAIN: {model_name} with hyperparameter tuning (Tree-based model)&quot;)
+    
+    # Define parameter grid (simplified for efficiency)
+    paramGrid = ParamGridBuilder()
+    
+    if model_type == &quot;rf&quot;:
+        # Tune maxDepth and numTrees
+        paramGrid = paramGrid \
+            .addGrid(pipeline.getStages()[-1].maxDepth, [5, 10]) \
+            .addGrid(pipeline.getStages()[-1].numTrees, [50, 100]) \
+            .build()
+    else:  # gbt
+        # Tune maxDepth and maxIter
+        paramGrid = paramGrid \
+            .addGrid(pipeline.getStages()[-1].maxDepth, [3, 5]) \
+            .addGrid(pipeline.getStages()[-1].maxIter, [50, 100]) \
+            .build()
+    
+    # Evaluator
+    evaluator = BinaryClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        metricName=&quot;areaUnderROC&quot;
+    )
+    
+    # Train-validation split for tuning
+    tvs = TrainValidationSplit(
+        estimator=pipeline,
+        estimatorParamMaps=paramGrid,
+        evaluator=evaluator,
+        trainRatio=0.85,  # 85% for training, 15% for validation within training set
+        seed=42
+    )
+    
+    # Fit
+    print(&quot;Tuning hyperparameters...&quot;)
+    model = tvs.fit(train_df)
+    
+    print(f&quot;Best model trained! Best AUC: {model.validationMetrics[model.validationMetrics.index(max(model.validationMetrics))]:.4f}&quot;)
+    
+    return model.bestModel
+
+
+def evaluate_model(model, df, stage_name):
+    &quot;&quot;&quot;Evaluate model and return metrics.&quot;&quot;&quot;
+    print(f&quot;\n=== Evaluating on {stage_name} ===&quot;)
+    
+    # Set job description for Spark UI
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;advanced_models&quot;, 
+                                    f&quot;EVALUATE: model evaluation on {stage_name} set&quot;)
+    
+    predictions = model.transform(df)
+    
+    # Binary classification metrics
+    binary_evaluator = BinaryClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        rawPredictionCol=&quot;rawPrediction&quot;,
+        metricName=&quot;areaUnderROC&quot;
+    )
+    auc = binary_evaluator.evaluate(predictions)
+    
+    # Multiclass metrics
+    multi_evaluator = MulticlassClassificationEvaluator(
+        labelCol=&quot;direction_label&quot;,
+        predictionCol=&quot;prediction&quot;
+    )
+    
+    multi_evaluator.setMetricName(&quot;accuracy&quot;)
+    accuracy = multi_evaluator.evaluate(predictions)
+    
+    multi_evaluator.setMetricName(&quot;f1&quot;)
+    f1 = multi_evaluator.evaluate(predictions)
+    
+    print(f&quot;Accuracy: {accuracy:.4f} | F1: {f1:.4f} | AUC: {auc:.4f}&quot;)
+    
+    return {
+        'accuracy': accuracy,
+        'f1': f1,
+        'auc': auc
+    }, predictions
+
+
+def extract_feature_importance(model, feature_cols, output_path):
+    &quot;&quot;&quot;Extract and save feature importance.&quot;&quot;&quot;
+    print(f&quot;\n=== Extracting Feature Importance ===&quot;)
+    
+    # Get the trained classifier (last stage)
+    classifier = model.stages[-1]
+    
+    if hasattr(classifier, 'featureImportances'):
+        importances = classifier.featureImportances.toArray()
+        
+        # Create feature importance list
+        feature_importance = list(zip(feature_cols, importances))
+        feature_importance.sort(key=lambda x: x[1], reverse=True)
+        
+        # Save to CSV
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        with open(output_path, 'w') as f:
+            f.write(&quot;feature,importance\n&quot;)
+            for feature, importance in feature_importance:
+                f.write(f&quot;{feature},{importance}\n&quot;)
+        
+        print(f&quot;Feature importance saved to: {output_path}&quot;)
+        
+        # Print top 10
+        print(&quot;\nTop 10 features:&quot;)
+        for i, (feature, importance) in enumerate(feature_importance[:10], 1):
+            print(f&quot;{i}. {feature}: {importance:.4f}&quot;)
+    else:
+        print(&quot;Model does not support feature importance extraction&quot;)
+
+
+def log_metrics(metrics, run_id, stage, log_path):
+    &quot;&quot;&quot;Log metrics to CSV.&quot;&quot;&quot;
+    if log_path and os.path.dirname(log_path):
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    
+    file_exists = os.path.exists(log_path)
+    
+    with open(log_path, 'a') as f:
+        if not file_exists:
+            f.write(&quot;run_id,stage,metric,value,timestamp\n&quot;)
+        
+        timestamp = datetime.now().isoformat()
+        for metric_name, value in metrics.items():
+            f.write(f&quot;{run_id},{stage},{metric_name},{value},{timestamp}\n&quot;)
+
+
+def save_model(model, output_path):
+    &quot;&quot;&quot;Save trained model.&quot;&quot;&quot;
+    print(f&quot;\n=== Saving model to {output_path} ===&quot;)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    model.write().overwrite().save(output_path)
+    print(&quot;Model saved!&quot;)
+
+
+def main():
+    &quot;&quot;&quot;Main execution function.&quot;&quot;&quot;
+    print(&quot;=&quot;*60)
+    print(&quot;BDA Project - Advanced Models (RF &amp; GBT)&quot;)
+    print(&quot;=&quot;*60)
+    
+    # Load configuration
+    config = load_config()
+    
+    # Create Spark session
+    spark = create_spark_session(config)
+    
+    # Load and split data
+    train_df, val_df, test_df = load_and_split_data(spark, config)
+    
+    # Get feature columns
+    feature_cols = get_feature_columns(train_df, config['training']['exclude_features'])
+    
+    metrics_log = config['paths']['metrics_log']
+    
+    # === Train Random Forest ===
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;RANDOM FOREST&quot;)
+    print(&quot;=&quot;*60)
+    
+    rf_pipeline = build_rf_pipeline(feature_cols, config)
+    rf_model = train_with_tuning(rf_pipeline, train_df, val_df, &quot;rf&quot;)
+    
+    # Evaluate RF
+    rf_train_metrics, _ = evaluate_model(rf_model, train_df, &quot;Train&quot;)
+    log_metrics(rf_train_metrics, &quot;random_forest&quot;, &quot;train&quot;, metrics_log)
+    
+    rf_test_metrics, _ = evaluate_model(rf_model, test_df, &quot;Test&quot;)
+    log_metrics(rf_test_metrics, &quot;random_forest&quot;, &quot;test&quot;, metrics_log)
+    
+    # Save RF model
+    save_model(rf_model, f&quot;{config['paths']['models_dir']}/random_forest&quot;)
+    
+    # Extract feature importance
+    extract_feature_importance(
+        rf_model,
+        feature_cols,
+        f&quot;{config['paths']['outputs_dir']}/rf_feature_importance.csv&quot;
+    )
+    
+    # === Train Gradient Boosted Trees ===
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;GRADIENT BOOSTED TREES&quot;)
+    print(&quot;=&quot;*60)
+    
+    gbt_pipeline = build_gbt_pipeline(feature_cols, config)
+    gbt_model = train_with_tuning(gbt_pipeline, train_df, val_df, &quot;gbt&quot;)
+    
+    # Evaluate GBT
+    gbt_train_metrics, _ = evaluate_model(gbt_model, train_df, &quot;Train&quot;)
+    log_metrics(gbt_train_metrics, &quot;gbt&quot;, &quot;train&quot;, metrics_log)
+    
+    gbt_test_metrics, _ = evaluate_model(gbt_model, test_df, &quot;Test&quot;)
+    log_metrics(gbt_test_metrics, &quot;gbt&quot;, &quot;test&quot;, metrics_log)
+    
+    # Save GBT model
+    save_model(gbt_model, f&quot;{config['paths']['models_dir']}/gbt&quot;)
+    
+    # Extract feature importance
+    extract_feature_importance(
+        gbt_model,
+        feature_cols,
+        f&quot;{config['paths']['outputs_dir']}/gbt_feature_importance.csv&quot;
+    )
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;Advanced models training completed successfully!&quot;)
+    print(&quot;=&quot;*60)
+    
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+        print(&quot;   Open this URL in your browser to take screenshots&quot;)
+    else:
+        print(&quot;\nSpark UI: http://localhost:4040 (or check terminal output)&quot;)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;SCREENSHOT GUIDE:&quot;)
+    print(&quot;=&quot;*60)
+    print(&quot;Take screenshots of:&quot;)
+    print(&quot;\n1. MOST IMPORTANT: 'TRAIN: Random Forest with hyperparameter tuning'&quot;)
+    print(&quot;   -&gt; Shows Random Forest tree training stages&quot;)
+    print(&quot;   -&gt; File: 06_advanced_models_rf_stages.png&quot;)
+    print(&quot;\n2. MOST IMPORTANT: 'TRAIN: Gradient Boosted Trees with hyperparameter tuning'&quot;)
+    print(&quot;   -&gt; Shows GBT tree training stages&quot;)
+    print(&quot;   -&gt; File: 06_advanced_models_gbt_stages.png&quot;)
+    print(&quot;\n3. 'EVALUATE: model evaluation on ... set'&quot;)
+    print(&quot;   -&gt; Shows evaluation metrics calculation&quot;)
+    print(&quot;\n4. Jobs tab (overview - both RF and GBT)&quot;)
+    print(&quot;   -&gt; File: 06_advanced_models_jobs.png&quot;)
+    print(&quot;\n5. Storage tab (if available)&quot;)
+    print(&quot;   -&gt; File: 06_advanced_models_storage.png&quot;)
+    print(&quot;\nSpark will stay alive until you press Enter...&quot;)
+    print(&quot;=&quot;*60)
+    
+    try:
+        input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+    
+    # Stop Spark
+    spark.stop()
+    print(&quot;Spark stopped.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,3 +1,12 @@
+---
+title: "baseline.py"
+---
+
+# 📄 baseline.py
+
+[📥 Télécharger le fichier brut](https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/models/baseline.py)
+
+```python
 """
 Machine Learning - Baseline Classifier Model
 Person B: Price Data & Modelling Specialist
@@ -391,3 +400,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+```

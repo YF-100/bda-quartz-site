@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>blockchain_features_from_metrics.py</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; background: #0d1117; font-family: 'Segoe UI', sans-serif; }
+        .header { background: #161b22; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #30363d; }
+        .header h1 { margin: 0; color: #c9d1d9; font-size: 20px; }
+        .download-btn { 
+            background: #238636; color: white; padding: 8px 16px; border-radius: 6px; 
+            text-decoration: none; display: inline-block; margin-top: 10px; font-size: 14px;
+        }
+        .download-btn:hover { background: #2ea043; }
+        pre { margin: 0; border-radius: 6px; }
+        code { font-size: 14px; line-height: 1.6; }
+        .hljs { padding: 20px; background: #0d1117 !important; border: 1px solid #30363d; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 blockchain_features_from_metrics.py</h1>
+        <a href="https://raw.githubusercontent.com/YF-100/BIG_DATA_TD/main/Projet/prediction/project-final/" class="download-btn">📥 Download Raw File</a>
+    </div>
+    <pre><code class="language-python">&quot;&quot;&quot;
+Feature Engineering - Blockchain Features from Pre-aggregated Metrics
+Person A: Blockchain &amp; ETL Specialist
+
+This script creates blockchain features from pre-aggregated metrics
+(from blockchain.com and lookintobitcoin.com APIs).
+
+Input: data/blockchain_metrics.parquet (hourly metrics)
+Output: data/blockchain_features.parquet
+&quot;&quot;&quot;
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import (
+    col, hour, dayofweek, lag, avg,
+    sum as spark_sum, count, stddev, when
+)
+from pyspark.sql.window import Window
+import yaml
+import os
+
+
+def load_config(config_path=&quot;bda_project_config.yml&quot;):
+    &quot;&quot;&quot;Load configuration from YAML file.&quot;&quot;&quot;
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def create_spark_session(config):
+    &quot;&quot;&quot;Create and configure SparkSession.&quot;&quot;&quot;
+    spark = SparkSession.builder \
+        .appName(config['spark']['app_name'] + &quot;_BlockchainFeatures&quot;) \
+        .master(config['spark']['master']) \
+        .config(&quot;spark.driver.memory&quot;, config['spark']['driver_memory']) \
+        .config(&quot;spark.executor.memory&quot;, config['spark']['executor_memory']) \
+        .config(&quot;spark.sql.shuffle.partitions&quot;, config['spark']['shuffle_partitions']) \
+        .config(&quot;spark.ui.enabled&quot;, &quot;true&quot;) \
+        .config(&quot;spark.ui.port&quot;, &quot;4040&quot;) \
+        .getOrCreate()
+    
+    spark.sparkContext.setLogLevel(config['spark']['log_level'])
+    
+    # Print Spark UI URL
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+        print(&quot;   Open this URL in your browser to view Spark UI\n&quot;)
+    
+    return spark
+
+
+def load_blockchain_metrics(spark, input_path):
+    &quot;&quot;&quot;Load pre-aggregated blockchain metrics.&quot;&quot;&quot;
+    print(f&quot;Loading blockchain metrics from: {input_path}&quot;)
+    
+    # Set job description for Spark UI
+    spark.sparkContext.setJobGroup(&quot;blockchain_features&quot;, 
+                                    &quot;LOAD: blockchain metrics from Parquet&quot;)
+    
+    if not os.path.exists(input_path):
+        print(f&quot;Error: {input_path} not found!&quot;)
+        return None
+    
+    df = spark.read.parquet(input_path)
+    print(f&quot;Loaded {df.count()} hourly metrics&quot;)
+    
+    return df
+
+
+def add_rolling_features(df):
+    &quot;&quot;&quot;
+    Add rolling window features for trend analysis.
+    
+    Features:
+    - tx_count_ma_24h: 24-hour moving average of transaction count
+    - hash_rate_ma_24h: 24-hour moving average of hash rate
+    - difficulty_ma_24h: 24-hour moving average of difficulty
+    &quot;&quot;&quot;
+    print(f&quot;\n=== Adding 24-hour rolling features ===&quot;)
+    
+    # Set job description for Spark UI - Important!
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;blockchain_features&quot;, 
+                                    &quot;WINDOW: 24h rolling features - Important screenshot target&quot;)
+    
+    # Define window: 24 hours (current + 23 previous)
+    window_24h = Window.orderBy(&quot;timestamp&quot;).rowsBetween(-23, 0)
+    
+    # Transaction count moving average
+    if &quot;tx_count&quot; in df.columns:
+        df = df.withColumn(&quot;tx_count_ma_24h&quot;, avg(&quot;tx_count&quot;).over(window_24h))
+    
+    # Hash rate moving average
+    if &quot;hash_rate_ths&quot; in df.columns:
+        df = df.withColumn(&quot;hash_rate_ma_24h&quot;, avg(&quot;hash_rate_ths&quot;).over(window_24h))
+    
+    # Difficulty moving average
+    if &quot;difficulty&quot; in df.columns:
+        df = df.withColumn(&quot;difficulty_ma_24h&quot;, avg(&quot;difficulty&quot;).over(window_24h))
+    
+    # Mempool size moving average
+    if &quot;mempool_size&quot; in df.columns:
+        df = df.withColumn(&quot;mempool_size_ma_24h&quot;, avg(&quot;mempool_size&quot;).over(window_24h))
+    
+    # Block size moving average
+    if &quot;block_size_mb&quot; in df.columns:
+        df = df.withColumn(&quot;block_size_ma_24h&quot;, avg(&quot;block_size_mb&quot;).over(window_24h))
+    
+    # Fees moving average
+    if &quot;total_fees&quot; in df.columns:
+        df = df.withColumn(&quot;total_fees_ma_24h&quot;, avg(&quot;total_fees&quot;).over(window_24h))
+    
+    # Active addresses moving average
+    if &quot;active_addresses&quot; in df.columns:
+        df = df.withColumn(&quot;active_addresses_ma_24h&quot;, avg(&quot;active_addresses&quot;).over(window_24h))
+    
+    return df
+
+
+def add_momentum_features(df):
+    &quot;&quot;&quot;
+    Add momentum indicators (rate of change).
+    &quot;&quot;&quot;
+    print(f&quot;\n=== Adding momentum features ===&quot;)
+    
+    # Set job description for Spark UI
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;blockchain_features&quot;, 
+                                    &quot;MOMENTUM: lag and change features&quot;)
+    
+    # Define window for lag
+    window_lag = Window.orderBy(&quot;timestamp&quot;)
+    
+    # Transaction count change
+    if &quot;tx_count&quot; in df.columns:
+        df = df.withColumn(&quot;tx_count_lag&quot;, lag(&quot;tx_count&quot;, 1).over(window_lag))
+        df = df.withColumn(
+            &quot;tx_count_change&quot;,
+            col(&quot;tx_count&quot;) - col(&quot;tx_count_lag&quot;)
+        )
+        df = df.withColumn(
+            &quot;tx_count_pct_change&quot;,
+            when(col(&quot;tx_count_lag&quot;) &gt; 0, 
+                 (col(&quot;tx_count&quot;) - col(&quot;tx_count_lag&quot;)) / col(&quot;tx_count_lag&quot;) * 100)
+            .otherwise(0.0)
+        )
+        df = df.drop(&quot;tx_count_lag&quot;)
+    
+    # Hash rate change
+    if &quot;hash_rate_ths&quot; in df.columns:
+        df = df.withColumn(&quot;hash_rate_lag&quot;, lag(&quot;hash_rate_ths&quot;, 1).over(window_lag))
+        df = df.withColumn(
+            &quot;hash_rate_change&quot;,
+            col(&quot;hash_rate_ths&quot;) - col(&quot;hash_rate_lag&quot;)
+        )
+        df = df.withColumn(
+            &quot;hash_rate_pct_change&quot;,
+            when(col(&quot;hash_rate_lag&quot;) &gt; 0,
+                 (col(&quot;hash_rate_ths&quot;) - col(&quot;hash_rate_lag&quot;)) / col(&quot;hash_rate_lag&quot;) * 100)
+            .otherwise(0.0)
+        )
+        df = df.drop(&quot;hash_rate_lag&quot;)
+    
+    # Difficulty change
+    if &quot;difficulty&quot; in df.columns:
+        df = df.withColumn(&quot;difficulty_lag&quot;, lag(&quot;difficulty&quot;, 1).over(window_lag))
+        df = df.withColumn(
+            &quot;difficulty_change&quot;,
+            col(&quot;difficulty&quot;) - col(&quot;difficulty_lag&quot;)
+        )
+        df = df.withColumn(
+            &quot;difficulty_pct_change&quot;,
+            when(col(&quot;difficulty_lag&quot;) &gt; 0,
+                 (col(&quot;difficulty&quot;) - col(&quot;difficulty_lag&quot;)) / col(&quot;difficulty_lag&quot;) * 100)
+            .otherwise(0.0)
+        )
+        df = df.drop(&quot;difficulty_lag&quot;)
+    
+    # Mempool size change
+    if &quot;mempool_size&quot; in df.columns:
+        df = df.withColumn(&quot;mempool_size_lag&quot;, lag(&quot;mempool_size&quot;, 1).over(window_lag))
+        df = df.withColumn(
+            &quot;mempool_size_change&quot;,
+            col(&quot;mempool_size&quot;) - col(&quot;mempool_size_lag&quot;)
+        )
+        df = df.drop(&quot;mempool_size_lag&quot;)
+    
+    return df
+
+
+def validate_features(df):
+    &quot;&quot;&quot;Validate blockchain features.&quot;&quot;&quot;
+    print(&quot;\n=== Validating Blockchain Features ===&quot;)
+    
+    # Set job description for Spark UI - This triggers action for Window functions
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;blockchain_features&quot;, 
+                                    &quot;WINDOW: 24h rolling features - Important screenshot target&quot;)
+    
+    # Check for nulls
+    null_counts = {}
+    for column in df.columns:
+        null_count = df.filter(col(column).isNull()).count()
+        if null_count &gt; 0:
+            null_counts[column] = null_count
+    
+    if null_counts:
+        print(&quot;Null counts by column:&quot;)
+        for col_name, count in null_counts.items():
+            print(f&quot;  {col_name}: {count}&quot;)
+    else:
+        print(&quot;✓ No null values found&quot;)
+    
+    # Check timestamp range
+    df.select(col(&quot;timestamp&quot;)).agg({&quot;timestamp&quot;: &quot;min&quot;}).show(truncate=False)
+    df.select(col(&quot;timestamp&quot;)).agg({&quot;timestamp&quot;: &quot;max&quot;}).show(truncate=False)
+    
+    # Feature count
+    print(f&quot;Total features: {len(df.columns)}&quot;)
+    
+    return df
+
+
+def optimize_and_save(df, output_path, num_partitions=4):
+    &quot;&quot;&quot;Optimize DataFrame and save as Parquet.&quot;&quot;&quot;
+    print(f&quot;\n=== Optimizing and saving to {output_path} ===&quot;)
+    
+    # Set job description for Spark UI
+    spark = df.sql_ctx.sparkSession
+    spark.sparkContext.setJobGroup(&quot;blockchain_features&quot;, 
+                                    &quot;SAVE: writing blockchain features to Parquet&quot;)
+    
+    # Coalesce to optimal number of partitions
+    df = df.coalesce(num_partitions)
+    
+    # Cache before writing
+    df.cache()
+    df.count()  # Materialize
+    
+    # Save as Parquet
+    df.write.mode(&quot;overwrite&quot;).parquet(output_path)
+    
+    print(f&quot;✓ Saved {df.count()} records to {output_path}&quot;)
+    print(f&quot;  Partitions: {num_partitions}&quot;)
+    
+    return df
+
+
+def save_explain_plan(df, output_path):
+    &quot;&quot;&quot;Save Spark execution plan for reproducibility.&quot;&quot;&quot;
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    with open(output_path, 'w') as f:
+        f.write(df._jdf.queryExecution().toString())
+    
+    print(f&quot;Explain plan saved to: {output_path}&quot;)
+
+
+def main():
+    &quot;&quot;&quot;Main execution function.&quot;&quot;&quot;
+    print(&quot;=&quot;*60)
+    print(&quot;BDA Project - Blockchain Features from Metrics&quot;)
+    print(&quot;=&quot;*60)
+    
+    # Load configuration
+    config = load_config()
+    
+    # Create Spark session
+    spark = create_spark_session(config)
+    
+    # Get paths from config
+    input_path = config['paths'].get('blockchain_metrics_parquet', 
+                                      'data/blockchain_metrics.parquet')
+    output_path = config['paths']['blockchain_features_parquet']
+    
+    # Load blockchain metrics
+    print(&quot;\n[STEP 1/4] Loading blockchain metrics...&quot;)
+    print(&quot;   Look for Job: 'LOAD: blockchain metrics from Parquet'&quot;)
+    df_metrics = load_blockchain_metrics(spark, input_path)
+    
+    if df_metrics is None:
+        print(&quot;No blockchain metrics data found. Run process_blockchain_metrics.py first.&quot;)
+        spark.stop()
+        return
+    
+    # Add rolling features
+    print(&quot;\n[STEP 2/4] Adding 24-hour rolling features...&quot;)
+    print(&quot;   Look for Job: 'WINDOW: 24h rolling features' - Important!&quot;)
+    df_features = add_rolling_features(df_metrics)
+    
+    # Add momentum features
+    print(&quot;\n[STEP 3/4] Adding momentum features...&quot;)
+    print(&quot;   Look for Job: 'MOMENTUM: lag and change features'&quot;)
+    df_features = add_momentum_features(df_features)
+    
+    # Validate features (this triggers Window and Momentum operations)
+    print(&quot;\n[STEP 3.5/4] Validating features...&quot;)
+    print(&quot;   Note: Window and Momentum features are executed here&quot;)
+    df_features = validate_features(df_features)
+    
+    # Show sample
+    print(&quot;\nSample blockchain features:&quot;)
+    df_features.show(10, truncate=False)
+    
+    print(&quot;\nDataFrame schema:&quot;)
+    df_features.printSchema()
+    
+    # Optimize and save
+    print(&quot;\n[STEP 4/4] Saving to Parquet...&quot;)
+    print(&quot;   Look for Job: 'SAVE: writing blockchain features to Parquet'&quot;)
+    num_partitions = config['blockchain'].get('output_partitions', 4)
+    df_final = optimize_and_save(df_features, output_path, num_partitions=num_partitions)
+    
+    # Save explain plan
+    plan_output = f&quot;{config['paths']['spark_plans_dir']}/blockchain_features_from_metrics_plan.txt&quot;
+    save_explain_plan(df_final, plan_output)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;Blockchain features creation completed successfully!&quot;)
+    print(&quot;=&quot;*60)
+    
+    ui_url = spark.sparkContext.uiWebUrl
+    if ui_url:
+        print(f&quot;\nSpark UI is available at: {ui_url}&quot;)
+    else:
+        print(&quot;\nSpark UI: http://localhost:4040 (or check terminal output)&quot;)
+    
+    print(&quot;\n&quot; + &quot;=&quot;*60)
+    print(&quot;SCREENSHOT GUIDE - Which Jobs to Capture:&quot;)
+    print(&quot;=&quot;*60)
+    print(&quot;\nNOTE: You will see MANY jobs with the same description.&quot;)
+    print(&quot;   This is normal - Spark creates a new job for each action.&quot;)
+    print(&quot;\nSOLUTION: Pick ONE representative job for each type:&quot;)
+    print(&quot;\n   1. IMPORTANT: 'WINDOW: 24h rolling features - Important screenshot target'&quot;)
+    print(&quot;      -&gt; Pick the one with most Stages or longest Duration&quot;)
+    print(&quot;      -&gt; This shows Window function operations (executed during validation)&quot;)
+    print(&quot;\n   2. 'MOMENTUM: lag and change features'&quot;)
+    print(&quot;      -&gt; Pick any one (they're all similar)&quot;)
+    print(&quot;\n   3. 'LOAD: blockchain metrics from Parquet'&quot;)
+    print(&quot;      -&gt; Pick any one&quot;)
+    print(&quot;\n   4. 'SAVE: writing blockchain features to Parquet'&quot;)
+    print(&quot;      -&gt; Pick the one with longest Duration&quot;)
+    print(&quot;\nSteps to take screenshots:&quot;)
+    print(&quot;   1. Open Spark UI -&gt; Jobs tab&quot;)
+    print(&quot;   2. Sort by 'Submitted Time' (newest first) or 'Duration' (longest first)&quot;)
+    print(&quot;   3. For WINDOW: Click job with most Stages&quot;)
+    print(&quot;   4. Go to Stages tab -&gt; take screenshot&quot;)
+    print(&quot;   5. Jobs overview (all jobs list)&quot;)
+    print(&quot;\nTIP: You only need 2-3 screenshots total:&quot;)
+    print(&quot;   - One WINDOW job (shows Window functions)&quot;)
+    print(&quot;   - Jobs overview (all jobs list)&quot;)
+    print(&quot;\nSpark will stay alive until you press Enter...&quot;)
+    print(&quot;=&quot;*60)
+    
+    try:
+        input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+    
+    # Stop Spark
+    spark.stop()
+    print(&quot;Spark stopped.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
