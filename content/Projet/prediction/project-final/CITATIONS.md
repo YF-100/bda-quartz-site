@@ -23,22 +23,12 @@ mczielinski. (2017). Bitcoin Historical Data. Kaggle.
 https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data
 ```
 
-### 2. Bitcoin Historical Datasets 2018-2024 (novandraanugrah)
+### 2. Bitcoin Network On-Chain Blockchain Data
 
 **Source:** Kaggle  
-**Dataset:** `novandraanugrah/bitcoin-historical-datasets-2018-2024`  
-**URL:** https://www.kaggle.com/datasets/novandraanugrah/bitcoin-historical-datasets-2018-2024  
-**License:** CC0: Public Domain  
-**Description:** Bitcoin historical data with 1-hour OHLCV data from 2018 to 2024  
-**Usage:** Used for price data preprocessing and feature engineering
-
-**Citation:**
-```
-novandraanugrah. (2024). Bitcoin Historical Datasets 2018-2024. Kaggle. 
-https://www.kaggle.com/datasets/novandraanugrah/bitcoin-historical-datasets-2018-2024
-```
-
----
+**Dataset:** `Bitcoin Network On-Chain Blockchain Data`  
+**URL:** https://www.kaggle.com/datasets/aleexharris/bitcoin-network-on-chain-blockchain-data/data?select=blockchain_dot_com_column_desc.csv
+  
 
 ## Software and Libraries
 

@@ -39,17 +39,44 @@
 >
 > **Nous avons développé DEUX pipelines distincts:**
 >
-> 1. **Pipeline INGESTION** - Pour respecter les consignes du cours
->    - Parse les blocs Bitcoin bruts 2009-2010 fournis
->    - Démontre les compétences de parsing bas-niveau enseignées
->    - MAIS: données trop anciennes pour un projet ML moderne
+> **1. Pipeline INGESTION** - Pour respecter les consignes du cours
 >
-> 2. **Pipeline PRÉDICTION** - Pour réaliser un projet ML fonctionnel
->    - Dataset Kaggle couvrant 2009-2023 (données complètes et récentes)
->    - 500+ GB de blockchain impossible à télécharger → solution Kaggle pré-agrégée
->    - Focus: ETL moderne, feature engineering et Machine Learning
+> **Objectif:** Démontrer la maîtrise du parsing de données brutes Bitcoin
 >
-> **Cette présentation porte sur le Pipeline Prédiction.**
+> **Architecture (3 phases):**
+> - **Phase 1 - Parsing Blocs Bruts:**
+>   - Lecture de fichiers blk*.dat (format binaire Bitcoin Core)
+>   - Extraction de 2.4M transactions depuis 8 blocs (2009-2010)
+>   - Parsing bas-niveau: headers, merkle roots, transactions
+>   - Output: transactions.parquet avec schéma complet
+>
+> - **Phase 2 - Feature Engineering Blockchain:**
+>   - Agrégations temporelles (fenêtres 1h)
+>   - Métriques: volume transactions, fees moyens, active addresses
+>   - 18,432 fenêtres temporelles générées
+>   - Output: blockchain_features.parquet
+>
+> - **Phase 3 - Optimisations Spark:**
+>   - Partitioning par timestamp (8 partitions)
+>   - Caching des DataFrames réutilisés
+>   - Explain plans capturés pour evidence
+>   - Temps total: 127 secondes
+>
+> **Limitation:** Données 2009-2010 non alignées avec prix récents → ML impossible
+>
+> ---
+>
+> **2. Pipeline PRÉDICTION** - Pour réaliser un projet ML fonctionnel
+>
+> **Objectif:** Modèle ML avec prédictions réelles et évaluables
+>
+> **Pourquoi différent?**
+> - Besoin de données récentes (2009-2023) pour ML pertinent
+> - Télécharger 500+ GB de blockchain complète impossible
+> - Solution: Dataset Kaggle pré-agrégé avec métriques calculées
+> - Focus: Feature engineering avancé et modélisation ML
+>
+> **Cette présentation détaille le Pipeline Prédiction.**
 >
 > **Notre pipeline ML se décompose en 4 phases:**
 >

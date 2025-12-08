@@ -287,14 +287,4 @@ kaggle datasets list --search bitcoin
 
 ---
 
-## Resources
 
-- **PySpark Documentation:** https://spark.apache.org/docs/latest/api/python/
-- **Bitcoin Core RPC:** https://developer.bitcoin.org/reference/rpc/
-- **Kaggle Datasets:**
-  - https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data
-  - https://www.kaggle.com/datasets/novandraanugrah/bitcoin-historical-datasets-2018-2024
-
----
-
-**Last Updated:** November 14, 2025
