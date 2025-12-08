@@ -1,7 +1,3 @@
----
-title: README
----
-
 # Quick Start - Practice Lab 01
 
 ## 🚀 Comment Exécuter
@@ -64,21 +60,3 @@ Dans le notebook, vous pouvez ajuster:
 | Part A | perfect x | WordCount (RDD + DF) |
 | Part B | PMI pairs/stripes | perfect x |
 | Part C | - | PMI pairs/stripes |
-
-## ✅ Checklist
-
-- [ ] Exécuter toutes les cellules
-- [ ] Vérifier outputs/ (5 CSV)
-- [ ] Vérifier proof/ (3 plans)
-- [ ] Capturer Spark UI screenshots
-- [ ] Mettre à jour lab1_metrics_log.csv avec vraies métriques
-- [ ] ENV.md généré
-- [ ] Tout fonctionne sans erreur
-
-## 🎯 Notation
-
-Practice Lab = **Pass/Fail** (pas de note)
-- Pass: Tous les livrables présents et corrects
-- Fail: Éléments manquants ou incorrects
-
-**Bon travail!** 🚀

@@ -208,21 +208,5 @@ All runs are reproducible via:
 3. Deterministic graph generation
 4. Consistent Spark configurations
 
-## Submission
 
-1. Ensure all outputs and evidence files are present
-2. Update `lab3_metrics_log.csv` with all runs
-3. Capture required screenshots
-4. Commit to private GitHub repository
-5. Share repo link via Google Form (to be provided)
 
-## References
-
-- Zachary's Karate Club: https://en.wikipedia.org/wiki/Zachary%27s_karate_club
-- SMS Spam Collection: https://archive.ics.uci.edu/ml/datasets/SMS+Spam+Collection
-- Personalized PageRank: https://cs.stanford.edu/people/plofgren/Fast-PPR_KDD_Talk.pdf
-- HashingTF: https://spark.apache.org/docs/latest/ml-features.html#featurehasher
-
----
-
-**Contact**: For questions, refer to course materials or instructor.

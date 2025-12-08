@@ -154,7 +154,7 @@ Capture Spark UI screenshots showing:
 | Code Quality | Clear, parameterized, tidy paths | Notebook |
 | **Metrics** | **Spark UI metrics in lab_metrics_log.csv** | **CSV + screenshots** |
 
-⚠️ **IMPORTANT**: Missing or inconsistent Spark UI metrics will result in a fail.
+
 
 ## Troubleshooting
 
@@ -190,14 +190,3 @@ spark = SparkSession.builder \
 - [PySpark API Reference](https://spark.apache.org/docs/latest/api/python/)
 - Data & Mining book: Chapter 1-2 (MapReduce patterns)
 
-## Notes
-
-- Work locally first before scaling
-- Test with small samples during development
-- Document all configuration changes
-- Keep evidence organized
-- Commit frequently to Git
-
----
-
-**Good luck with your assignment!** 🚀
