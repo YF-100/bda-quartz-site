@@ -1,10 +1,10 @@
+---
+title: PERFORMANCE COMPARISON
+---
+
 # Part A Performance Comparison: TEXT vs PARQUET
 
-## Execution Summary
 
-Date: 2025-12-05
-Test Date: 1996-01-02
-Dataset: TPC-H 0.1 scale factor
 
 ## Query Execution Times
 
@@ -135,9 +135,4 @@ For the Assignment 04 use case (TPC-H 0.1, RDD-only, local execution), TEXT form
 
 However, these results would reverse at larger scale factors where Parquet's compression and columnar format provide substantial benefits.
 
----
-
-**Generated**: 2025-12-05  
-**Dataset**: TPC-H 0.1 scale factor  
-**Environment**: macOS, Spark 4.0.1 (local mode)
 

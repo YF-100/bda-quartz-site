@@ -75,7 +75,7 @@ window_spec = Window.partitionBy().orderBy("timestamp").rowsBetween(-24, 0)
 - Kaggle Notebooks (feature engineering examples)
 
 ### Avec Aide IA
-- ChatGPT/Claude: Explications conceptuelles (~10 sessions)
+
 - Documentation auto-générée: Templates README, docstrings
 
 ---

@@ -369,7 +369,3 @@ r3,ppr_multisource,alpha=0.90 iters=10,1,98,0,0,2025-11-13T10:40:00Z
 
 **Remember**: Metrics are for **reproducibility and understanding**, not absolute performance comparison. Focus on correctness and consistency.
 
----
-
-**Last Updated**: 2025-11-13  
-**Version**: 1.0
