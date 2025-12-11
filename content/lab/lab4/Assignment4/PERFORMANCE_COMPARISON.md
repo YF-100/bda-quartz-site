@@ -1,5 +1,5 @@
 ---
-title: PERFORMANCE COMPARISON
+date: 2025-12-07
 ---
 
 # Part A Performance Comparison: TEXT vs PARQUET

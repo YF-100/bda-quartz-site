@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # Lab 3 Report - PageRank & Spam Classification
 
 **Author**: Yassin F  

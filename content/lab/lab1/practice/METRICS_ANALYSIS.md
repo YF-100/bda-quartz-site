@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # 📊 Practice Lab - Analyse des Métriques Spark UI
 
 **Date**: 12 Novembre 2025  

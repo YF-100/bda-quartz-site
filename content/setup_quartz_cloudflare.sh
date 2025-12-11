@@ -364,37 +364,8 @@ prune_content_data_files() {
 }
  
  
-# ==========================
-# 7) Resources page (index)
-# ==========================
-log_step "7) Building notebooks index"
-NB_INDEX_MD="$SITE_DIR/content/resources.md"
-{
-  printf '%s\n' '---'
-  printf '%s\n' 'title: Resources'
-  printf '%s\n' 'publish: true'
-  printf '%s\n' 'permalink: /resources'
-  printf '%s\n' '---'
-  printf '%s\n' '# Resources'
-  printf '\n'
-  printf '%s\n' '## Setup Guide'
-  printf '%s\n' '- [Home (README - Setup Instructions)](/)'
-  printf '\n'
-  printf '%s\n' '## Support Docs'
-  printf '%s\n' '- [Support Library](/support)'
-  printf '\n'
-  printf '%s\n' '## Labs & Assignments'
-  find "$NB_WRAP_ROOT" -type f -name "*.md" \
-       \( -path "$NB_WRAP_ROOT/labs-final/*" -o -path "$NB_WRAP_ROOT/project-final/*" \) \
-       ! -name "index.md" -print0 |
-  while IFS= read -r -d '' md; do
-    rel="${md#"$NB_WRAP_ROOT/"}"; base="${rel%.md}"
-    title="$(basename "$base" | sed 's/_/ /g')"
-    printf '%s\n' "- [$title](/$(urlenc "$base"))"
-  done
-} > "$NB_INDEX_MD"
- 
- 
+
+
  
 # ====== 8) BUILD SITE LOCALLY ======
 log_step "8) Building Quartz site locally"

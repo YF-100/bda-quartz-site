@@ -1,5 +1,5 @@
 ---
-title: PERFORMANCE NOTES
+date: 2025-12-07
 ---
 
 # Performance Notes — BDA Practice Lab 04

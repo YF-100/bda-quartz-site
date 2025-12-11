@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # Boolean Retrieval Results
 
 Results are ranked by sum of term frequencies (tf).

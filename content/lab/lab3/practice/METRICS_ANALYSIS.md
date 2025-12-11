@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # Metrics Analysis Guide — Practice Lab 03
 
 ## Overview

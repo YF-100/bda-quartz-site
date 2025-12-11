@@ -1,5 +1,5 @@
 ---
-title: genai
+date: 2025-12-07
 ---
 
 # GenAI Usage Documentation

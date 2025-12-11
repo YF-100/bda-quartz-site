@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # Spark Metrics Analysis - Lab 3
 
 ## Overview
