@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # BDA Final Project — Report
 
 **Course:** Big Data Analytics (BDA) 2025-2026  
