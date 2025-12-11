@@ -1,5 +1,5 @@
 ---
-title: BLOCKCHAIN SAMPLING
+date: 2025-12-07
 ---
 
 # 🎯 Guide d'échantillonnage intelligent - Blockchain Novembre 2025

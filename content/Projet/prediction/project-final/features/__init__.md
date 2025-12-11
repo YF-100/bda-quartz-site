@@ -1,5 +1,6 @@
 ---
 title: "__init__.py"
+date: 2025-12-07
 ---
 
 # 📄 __init__.py

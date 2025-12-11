@@ -1,5 +1,5 @@
 ---
-title: JOINTURE EXPLANATION
+date: 2025-12-07
 ---
 
 # 🔗 Explication de la Jointure Blockchain ↔ Prix

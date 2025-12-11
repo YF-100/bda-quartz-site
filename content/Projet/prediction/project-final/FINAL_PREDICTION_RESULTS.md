@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # Bitcoin Price Prediction Results (Price + Blockchain Features)
 
 ## ✅ Prediction Complete: Using Price + Blockchain Data

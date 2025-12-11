@@ -1,3 +1,7 @@
+---
+date: 2025-12-07
+---
+
 # Environment Setup Documentation
 
 ## Project: Bitcoin Price Prediction using PySpark
